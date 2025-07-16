@@ -1,0 +1,1965 @@
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f5f5f5;
+    color: #333;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    background: white;
+    min-height: 100vh;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+}
+
+/* Header Styles */
+.header {
+    background: linear-gradient(135deg, #2c3e50, #3498db);
+    color: white;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+#quick-save {
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: white;
+    padding: 0.5rem;
+    min-width: 40px;
+    height: 40px;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.logo i {
+    font-size: 2rem;
+    color: #f39c12;
+}
+
+.logo h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.nav {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.nav-btn {
+    background: rgba(255,255,255,0.1);
+    border: none;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.nav-btn:hover {
+    background: rgba(255,255,255,0.2);
+    transform: translateY(-2px);
+}
+
+.nav-btn.active {
+    background: rgba(255,255,255,0.3);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+/* Main Content */
+.main-content {
+    padding: 2rem;
+}
+
+.section {
+    display: none;
+}
+
+.section.active {
+    display: block;
+}
+
+.section h2 {
+    color: #2c3e50;
+    margin-bottom: 1.5rem;
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+/* Dashboard Styles */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+}
+
+.stat-card.clickable {
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    pointer-events: auto;
+    z-index: 1;
+    position: relative;
+}
+
+.stat-card.clickable:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.stat-card.clickable:active {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+}
+
+.stat-card-arrow {
+    margin-left: auto;
+    color: #bdc3c7;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+}
+
+.stat-card.clickable:hover .stat-card-arrow {
+    color: #3498db;
+    transform: translateX(5px);
+}
+
+/* Ensure all child elements don't interfere with clicking */
+.stat-card.clickable * {
+    pointer-events: none;
+}
+
+.stat-card.clickable {
+    pointer-events: auto;
+}
+
+.stat-card i {
+    font-size: 2.5rem;
+    color: #3498db;
+}
+
+.stat-info h3 {
+    font-size: 2rem;
+    color: #2c3e50;
+    margin-bottom: 0.25rem;
+}
+
+.stat-info p {
+    color: #7f8c8d;
+    font-size: 0.9rem;
+}
+
+.recent-activities {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.recent-activities h3 {
+    color: #2c3e50;
+    margin-bottom: 1rem;
+}
+
+.activities-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.activity-item {
+    padding: 0.75rem;
+    border-left: 4px solid #3498db;
+    background: #f8f9fa;
+    margin-bottom: 0.5rem;
+    border-radius: 0 8px 8px 0;
+}
+
+/* Section Header */
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+/* Buttons */
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: #3498db;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #2980b9;
+    transform: translateY(-2px);
+}
+
+.btn-secondary {
+    background: #95a5a6;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #7f8c8d;
+    transform: translateY(-2px);
+}
+
+.btn-danger {
+    background: #e74c3c;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #c0392b;
+}
+
+.btn-success {
+    background: #27ae60;
+    color: white;
+}
+
+.btn-success:hover {
+    background: #229954;
+}
+
+/* Search and Filter */
+.search-filter {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.search-input, .filter-select {
+    padding: 0.75rem;
+    border: 2px solid #ecf0f1;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    transition: border-color 0.3s ease;
+}
+
+.search-input {
+    flex: 1;
+    min-width: 250px;
+}
+
+.search-input:focus, .filter-select:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+/* Table Styles */
+.table-container {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    overflow-x: auto;
+    position: relative;
+}
+
+.mobile-scroll-hint {
+    display: none;
+    background: #f8f9fa;
+    color: #6c757d;
+    text-align: center;
+    padding: 0.5rem;
+    font-size: 0.8rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+@media (max-width: 768px) {
+    .mobile-scroll-hint {
+        display: block;
+    }
+}
+
+.members-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.members-table th {
+    background: #34495e;
+    color: white;
+    padding: 1rem 0.75rem;
+    text-align: left;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.members-table td {
+    padding: 0.75rem;
+    border-bottom: 1px solid #ecf0f1;
+    white-space: nowrap;
+}
+
+.members-table tr:hover {
+    background: #f8f9fa;
+}
+
+/* Founding Member Row Highlighting */
+.founding-member-row {
+    background: linear-gradient(90deg, #fff9e6 0%, #ffffff 100%);
+    border-left: 4px solid #f39c12;
+}
+
+.founding-member-row:hover {
+    background: linear-gradient(90deg, #fff3cd 0%, #f8f9fa 100%);
+}
+
+.founding-icon {
+    color: #f39c12;
+    margin-right: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.inactive-member {
+    opacity: 0.6;
+    background: #f8f9fa;
+}
+
+.inactive-member:hover {
+    background: #e9ecef;
+}
+
+.inactive-icon {
+    color: #6c757d;
+    margin-left: 0.5rem;
+    font-size: 0.8rem;
+}
+
+.member-name {
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+}
+
+/* Fee Status Styling */
+.paid-fee {
+    color: #27ae60;
+    font-weight: 500;
+}
+
+.unpaid-fee {
+    color: #e74c3c;
+    font-weight: 500;
+    background: #ffeaea;
+    padding: 0.25rem;
+    border-radius: 4px;
+}
+
+.total-paid {
+    font-weight: 600;
+    color: #2c3e50;
+    background: #e8f5e8;
+    padding: 0.25rem;
+    border-radius: 4px;
+}
+
+/* Member Legend */
+.member-legend {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    flex-wrap: wrap;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #6c757d;
+}
+
+.unpaid-indicator {
+    background: #ffeaea;
+    color: #e74c3c;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 500;
+    font-size: 0.8rem;
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.status-founding {
+    background: #27ae60;
+    color: white;
+}
+
+.status-new {
+    background: #3498db;
+    color: white;
+}
+
+.status-approved {
+    background: #f39c12;
+    color: white;
+}
+
+.status-inactive {
+    background: #95a5a6;
+    color: white;
+}
+
+.status-pending {
+    background: #e67e22;
+    color: white;
+}
+
+/* Fee Management */
+.fee-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.fee-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.fee-card h3 {
+    color: #2c3e50;
+    margin-bottom: 1rem;
+}
+
+.fee-card p {
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.pending-fees {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.pending-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.pending-fees-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.pending-fees-header h3 {
+    margin: 0;
+}
+
+.pending-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border: 1px solid #ecf0f1;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    background: #f8f9fa;
+}
+
+.pending-info {
+    flex: 1;
+}
+
+.pending-info .notes {
+    color: #6c757d;
+    font-style: italic;
+}
+
+.pending-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.empty-state {
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
+    padding: 2rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 2px dashed #dee2e6;
+}
+
+/* Fee Years Management */
+.fee-header-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.current-years-section, .add-year-section {
+    margin-bottom: 2rem;
+}
+
+.current-years-section h3, .add-year-section h3 {
+    color: #2c3e50;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid #ecf0f1;
+    padding-bottom: 0.5rem;
+}
+
+.fee-years-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.fee-year-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border: 1px solid #ecf0f1;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    background: white;
+    transition: all 0.3s ease;
+}
+
+.fee-year-item:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.fee-year-item.inactive {
+    opacity: 0.6;
+    background: #f8f9fa;
+}
+
+.fee-year-info {
+    flex: 1;
+}
+
+.fee-year-info strong {
+    font-size: 1.1rem;
+    color: #2c3e50;
+    margin-right: 1rem;
+}
+
+.fee-amount {
+    background: #e8f5e8;
+    color: #27ae60;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 500;
+    margin-right: 1rem;
+}
+
+.fee-year-info small {
+    display: block;
+    color: #6c757d;
+    margin-top: 0.25rem;
+}
+
+.fee-year-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Member Fee Editing */
+.fee-cell {
+    position: relative;
+}
+
+.fee-amount-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.fee-amount {
+    flex: 1;
+}
+
+.btn-edit-fee {
+    background: none;
+    border: none;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.fee-cell:hover .btn-edit-fee {
+    opacity: 1;
+}
+
+.btn-edit-fee:hover {
+    background: #f8f9fa;
+    color: #495057;
+}
+
+.paid-fee .btn-edit-fee {
+    color: #28a745;
+}
+
+.unpaid-fee .btn-edit-fee {
+    color: #dc3545;
+}
+
+.member-fee-info {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    border-left: 4px solid #007bff;
+}
+
+.member-fee-info p {
+    margin: 0.5rem 0;
+    font-size: 0.95rem;
+}
+
+.member-fee-info strong {
+    color: #2c3e50;
+}
+
+/* Reports */
+.report-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.report-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.report-card h3 {
+    color: #2c3e50;
+    margin-bottom: 1rem;
+}
+
+.export-options {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background-color: white;
+    margin: 5% auto;
+    padding: 2rem;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    position: relative;
+    animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.close {
+    position: absolute;
+    right: 1rem;
+    top: 1rem;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #95a5a6;
+    transition: color 0.3s ease;
+}
+
+.close:hover {
+    color: #e74c3c;
+}
+
+/* Form Styles */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #2c3e50;
+    font-weight: 500;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #ecf0f1;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    transition: border-color 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 2rem;
+}
+
+/* Enhanced Mobile Responsive Design */
+
+/* Mobile First - Base styles for mobile */
+@media (max-width: 480px) {
+    body {
+        font-size: 14px;
+    }
+
+    .container {
+        margin: 0;
+        box-shadow: none;
+    }
+
+    .header {
+        padding: 0.75rem 1rem;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .header-actions {
+        width: 100%;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    #quick-save {
+        align-self: center;
+        width: auto;
+    }
+
+    .logo h1 {
+        font-size: 1.2rem;
+    }
+
+    .logo i {
+        font-size: 1.5rem;
+    }
+
+    .nav {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.5rem;
+    }
+
+    .nav-btn {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.75rem;
+        text-align: center;
+        justify-content: center;
+        border-radius: 6px;
+    }
+
+    .main-content {
+        padding: 0.75rem;
+    }
+
+    .section h2 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    /* Mobile Dashboard */
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .stat-card {
+        padding: 1.25rem;
+        flex-direction: row;
+        align-items: center;
+        min-height: 80px;
+    }
+
+    .stat-card.clickable {
+        border: 2px solid transparent;
+        transition: all 0.3s ease;
+    }
+
+    .stat-card.clickable:active {
+        border-color: #3498db;
+        background: #f8f9fa;
+        transform: scale(0.98);
+    }
+
+    .stat-card i {
+        font-size: 2rem;
+        min-width: 50px;
+    }
+
+    .stat-info {
+        flex: 1;
+    }
+
+    .stat-info h3 {
+        font-size: 1.5rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-info p {
+        font-size: 0.85rem;
+        margin: 0;
+    }
+
+    .stat-card-arrow {
+        font-size: 1rem;
+        color: #95a5a6;
+        margin-left: 0.5rem;
+    }
+
+    /* Mobile Section Headers */
+    .section-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+
+    .section-header h2 {
+        margin-bottom: 0;
+    }
+
+    /* Mobile Search and Filters */
+    .search-filter {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .search-input, .filter-select {
+        width: 100%;
+        padding: 0.75rem;
+        font-size: 16px; /* Prevents zoom on iOS */
+    }
+
+    /* Mobile Table - Card Layout */
+    .table-container {
+        overflow: visible;
+    }
+
+    .members-table {
+        display: block;
+        width: 100%;
+        font-size: 0.85rem;
+    }
+
+    .members-table thead {
+        display: none; /* Hide table headers on mobile */
+    }
+
+    .members-table tbody {
+        display: block;
+        width: 100%;
+    }
+
+    .members-table tr {
+        display: block;
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        padding: 1rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        position: relative;
+    }
+
+    .members-table td {
+        display: block;
+        width: 100%;
+        padding: 0.5rem 0;
+        border: none;
+        text-align: left;
+        position: relative;
+        padding-left: 40%;
+    }
+
+    .members-table td:before {
+        content: attr(data-label);
+        position: absolute;
+        left: 0;
+        width: 35%;
+        font-weight: 600;
+        color: #2c3e50;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Hide serial number on mobile */
+    .members-table td:first-child {
+        display: none;
+    }
+
+    /* Mobile founding member highlighting */
+    .founding-member-row {
+        border-left: 4px solid #f39c12 !important;
+        background: linear-gradient(135deg, #fff9e6 0%, #fef5e7 100%) !important;
+        box-shadow: 0 3px 8px rgba(243, 156, 18, 0.2) !important;
+    }
+
+    .founding-member-row:before {
+        content: "👑 FOUNDING MEMBER";
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        background: #f39c12;
+        color: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .founding-icon, .inactive-icon {
+        font-size: 1rem;
+        margin-right: 0.5rem;
+    }
+
+    .member-name {
+        flex-direction: row;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 600;
+        font-size: 1rem;
+        color: #2c3e50;
+    }
+
+    .unpaid-fee {
+        background: #ffebee;
+        color: #c62828;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+
+    .paid-fee {
+        background: #e8f5e8;
+        color: #2e7d32;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+
+    .total-paid {
+        background: #e3f2fd;
+        color: #1565c0;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    /* Mobile Action Buttons */
+    .action-buttons {
+        display: flex;
+        flex-direction: row;
+        gap: 0.75rem;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+        margin-top: 0.5rem;
+        padding-left: 0 !important;
+    }
+
+    .action-buttons:before {
+        content: "Actions:";
+        position: absolute;
+        left: 0;
+        width: 35%;
+        font-weight: 600;
+        color: #2c3e50;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .btn-small {
+        padding: 0.6rem 1rem;
+        font-size: 0.8rem;
+        min-width: auto;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        white-space: nowrap;
+        border-radius: 6px;
+        font-weight: 500;
+    }
+
+    .btn-small i {
+        font-size: 0.9rem;
+    }
+
+    /* Mobile status badges */
+    .status-badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-founding-member {
+        background: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeaa7;
+    }
+
+    .status-new-member {
+        background: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+    }
+
+    .status-approved-for-membership {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+
+    .status-founding-member-inactive {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+
+    /* Mobile fee amount styling */
+    .fee-amount-container {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+    }
+
+    .fee-amount {
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    /* Mobile member count display */
+    .member-count {
+        background: #f8f9fa;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+        color: #495057;
+        text-align: center;
+        border: 1px solid #dee2e6;
+    }
+
+    /* Mobile pending fees section */
+    .pending-fees-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+
+    .pending-fees-header h3 {
+        text-align: center;
+        margin-bottom: 0;
+    }
+
+    #add-pending-fee-btn {
+        width: 100%;
+        padding: 1rem;
+        font-size: 1rem;
+        font-weight: 600;
+        justify-content: center;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .pending-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+        padding: 1.5rem;
+    }
+
+    .pending-info {
+        text-align: center;
+    }
+
+    .pending-actions {
+        justify-content: center;
+        gap: 1rem;
+    }
+
+    .pending-actions .btn-small {
+        flex: 1;
+        max-width: 120px;
+        padding: 1rem 0.5rem;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    /* Mobile Buttons */
+    .btn {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Mobile Fee Management */
+    .fee-summary, .expense-summary, .contribution-summary {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .fee-card {
+        padding: 1rem;
+        text-align: left;
+    }
+
+    .pending-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+        padding: 1rem;
+    }
+
+    .pending-item .btn {
+        width: 100%;
+        margin-top: 0.5rem;
+    }
+
+    /* Mobile Reports */
+    .report-cards {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .export-options {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    /* Mobile Modals */
+    .modal {
+        z-index: 9999 !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        background-color: rgba(0,0,0,0.7) !important;
+        backdrop-filter: blur(3px);
+        -webkit-backdrop-filter: blur(3px);
+    }
+
+    .modal-content {
+        margin: 2% auto !important;
+        width: 96% !important;
+        max-width: none !important;
+        padding: 1.5rem !important;
+        max-height: 95vh !important;
+        overflow-y: auto !important;
+        position: relative !important;
+        border-radius: 12px !important;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .modal h2 {
+        font-size: 1.3rem;
+        margin-bottom: 1rem;
+    }
+
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        padding: 1rem !important;
+        font-size: 16px !important; /* Prevents zoom on iOS */
+        border: 2px solid #ddd !important;
+        border-radius: 8px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        -webkit-appearance: none !important;
+        -moz-appearance: none !important;
+        appearance: none !important;
+        touch-action: manipulation !important;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        border-color: #3498db !important;
+        outline: none !important;
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2) !important;
+    }
+
+    .form-actions {
+        flex-direction: column;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .form-actions .btn {
+        width: 100% !important;
+        padding: 1.25rem !important;
+        font-size: 1.1rem !important;
+        font-weight: 600 !important;
+        border-radius: 8px !important;
+        border: none !important;
+        cursor: pointer !important;
+        touch-action: manipulation !important;
+        -webkit-tap-highlight-color: transparent !important;
+        user-select: none !important;
+        -webkit-user-select: none !important;
+        min-height: 50px !important;
+    }
+
+    .form-actions .btn:active {
+        transform: scale(0.98) !important;
+    }
+
+    /* Mobile Invoice */
+    .invoice-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+        padding: 1rem;
+    }
+
+    .invoice-actions {
+        justify-content: stretch;
+    }
+
+    .invoice-actions .btn {
+        flex: 1;
+    }
+}
+
+/* Tablet styles */
+@media (min-width: 481px) and (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem 1.5rem;
+    }
+
+    .nav {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .nav-btn {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.85rem;
+    }
+
+    .main-content {
+        padding: 1.5rem;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .section-header {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .search-filter {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .search-input {
+        flex: 1;
+        min-width: 200px;
+    }
+
+    .fee-summary {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .report-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-content {
+        width: 85%;
+        padding: 2rem;
+    }
+}
+
+/* Large tablet and small desktop */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .fee-summary {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .nav-btn {
+        padding: 0.7rem 1.3rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* Action Buttons in Table */
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-small {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    border-radius: 4px;
+}
+
+/* Invoice Styles */
+.invoice-item {
+    background: white;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.invoice-info h4 {
+    color: #2c3e50;
+    margin-bottom: 0.25rem;
+}
+
+.invoice-info p {
+    color: #7f8c8d;
+    font-size: 0.9rem;
+}
+
+.invoice-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Expense Management Styles */
+.expense-summary, .contribution-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.expense-card, .contribution-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    text-align: center;
+    border-left: 4px solid #e74c3c;
+}
+
+.contribution-card {
+    border-left-color: #27ae60;
+}
+
+.expense-card h3, .contribution-card h3 {
+    color: #2c3e50;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+}
+
+.expense-card p, .contribution-card p {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #e74c3c;
+    margin: 0;
+}
+
+.contribution-card p {
+    color: #27ae60;
+}
+
+.expense-filters, .contribution-filters {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.expenses-table, .contributions-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.expenses-table th, .contributions-table th {
+    background: #34495e;
+    color: white;
+    padding: 1rem 0.75rem;
+    text-align: left;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.expenses-table td, .contributions-table td {
+    padding: 0.75rem;
+    border-bottom: 1px solid #ecf0f1;
+    white-space: nowrap;
+}
+
+.expenses-table tr:hover, .contributions-table tr:hover {
+    background: #f8f9fa;
+}
+
+.status-paid {
+    background: #27ae60;
+    color: white;
+}
+
+.status-pending {
+    background: #f39c12;
+    color: white;
+}
+
+.status-reimbursed {
+    background: #3498db;
+    color: white;
+}
+
+.type-member {
+    background: #3498db;
+    color: white;
+}
+
+.type-external {
+    background: #9b59b6;
+    color: white;
+}
+
+.type-donation {
+    background: #27ae60;
+    color: white;
+}
+
+.type-sponsorship {
+    background: #e67e22;
+    color: white;
+}
+
+/* Financial Summary Styles */
+.financial-item, .stat-item {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #ecf0f1;
+    display: flex;
+    justify-content: space-between;
+}
+
+.financial-item:last-child, .stat-item:last-child {
+    border-bottom: none;
+}
+
+.total-line {
+    background: #e8f5e8;
+    font-size: 1.1rem;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-top: 1rem;
+}
+
+.pending-line {
+    background: #fff3cd;
+    font-size: 1.1rem;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-top: 0.5rem;
+}
+
+/* Loading and Empty States */
+.loading {
+    text-align: center;
+    padding: 2rem;
+    color: #7f8c8d;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: #7f8c8d;
+}
+
+.empty-state i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: #bdc3c7;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInRight {
+    from { opacity: 0; transform: translateX(100px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideOutRight {
+    from { opacity: 1; transform: translateX(0); }
+    to { opacity: 0; transform: translateX(100px); }
+}
+
+@keyframes slideInDown {
+    from { opacity: 0; transform: translate(-50%, -50px); }
+    to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+@keyframes slideOutUp {
+    from { opacity: 1; transform: translate(-50%, 0); }
+    to { opacity: 0; transform: translate(-50%, -50px); }
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease;
+}
+
+/* Print Styles */
+@media print {
+    .header, .nav, .section-header, .btn, .modal {
+        display: none !important;
+    }
+
+    .main-content {
+        padding: 0;
+    }
+
+    .table-container {
+        box-shadow: none;
+    }
+
+    body {
+        background: white;
+    }
+}
+
+/* Mobile Touch Enhancements */
+.btn, .nav-btn {
+    -webkit-tap-highlight-color: rgba(0,0,0,0.1);
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    touch-action: manipulation;
+}
+
+/* Ensure minimum touch target size (44px) */
+@media (max-width: 768px) {
+    .btn, .nav-btn, .btn-small {
+        min-height: 44px;
+        min-width: 44px;
+        touch-action: manipulation; /* Improves touch responsiveness */
+        -webkit-tap-highlight-color: rgba(0,0,0,0.1);
+    }
+
+    /* Better spacing for touch */
+    .action-buttons .btn-small {
+        margin: 3px;
+        padding: 0.75rem 0.5rem;
+        font-weight: 500;
+    }
+
+    /* Larger tap targets for table actions */
+    .members-table .action-buttons {
+        min-width: 120px;
+        padding: 0.5rem 0.25rem;
+    }
+
+    /* Specific mobile styles for action buttons */
+    .btn-success {
+        background: #28a745 !important;
+        border: 2px solid #28a745 !important;
+        color: white !important;
+        font-weight: 600;
+    }
+
+    .btn-success:active {
+        background: #1e7e34 !important;
+        border-color: #1e7e34 !important;
+        transform: scale(0.95);
+    }
+
+    .btn-danger {
+        background: #dc3545 !important;
+        border: 2px solid #dc3545 !important;
+        color: white !important;
+        font-weight: 600;
+    }
+
+    .btn-danger:active {
+        background: #c82333 !important;
+        border-color: #c82333 !important;
+        transform: scale(0.95);
+    }
+
+    .btn-secondary {
+        background: #6c757d !important;
+        border: 2px solid #6c757d !important;
+        color: white !important;
+        font-weight: 600;
+    }
+
+    .btn-secondary:active {
+        background: #545b62 !important;
+        border-color: #545b62 !important;
+        transform: scale(0.95);
+    }
+
+    /* Improve edit fee button visibility on mobile */
+    .btn-edit-fee {
+        opacity: 1 !important; /* Always visible on mobile */
+        background: rgba(0,0,0,0.05) !important;
+        padding: 0.5rem !important;
+        min-width: 40px !important;
+        min-height: 40px !important;
+        border-radius: 6px !important;
+        touch-action: manipulation;
+    }
+
+    .btn-edit-fee:active {
+        background: rgba(0,0,0,0.1) !important;
+        transform: scale(0.9);
+    }
+
+    /* Better fee amount container for mobile */
+    .fee-amount-container {
+        flex-direction: column;
+        gap: 0.25rem;
+        align-items: center;
+    }
+
+    .fee-amount {
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+}
+
+/* Smooth scrolling for mobile */
+html {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Hide scrollbars on mobile while keeping functionality */
+@media (max-width: 768px) {
+    .table-container::-webkit-scrollbar {
+        height: 3px;
+    }
+
+    .table-container::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+
+    .table-container::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 3px;
+    }
+}
+
+/* Mobile Safari Button Fix */
+button, .btn, .btn-small, .btn-success, .btn-primary, .btn-secondary, .btn-danger, .btn-warning {
+    -webkit-appearance: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+    cursor: pointer !important;
+    touch-action: manipulation !important;
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    -ms-user-select: none !important;
+    -webkit-touch-callout: none !important;
+    position: relative !important;
+    z-index: 1 !important;
+    pointer-events: auto !important;
+}
+
+/* Comprehensive mobile button fixes */
+@media (max-width: 768px) {
+    button, .btn, .btn-small {
+        min-height: 50px !important;
+        min-width: 50px !important;
+        padding: 1rem !important;
+        font-size: 1rem !important;
+        font-weight: 600 !important;
+        border-radius: 8px !important;
+        border: 2px solid transparent !important;
+        background-clip: padding-box !important;
+        transition: all 0.2s ease !important;
+    }
+
+    /* Specific button type styles for mobile */
+    .btn-success {
+        background: #28a745 !important;
+        color: white !important;
+        border-color: #28a745 !important;
+    }
+
+    .btn-primary {
+        background: #007bff !important;
+        color: white !important;
+        border-color: #007bff !important;
+    }
+
+    .btn-secondary {
+        background: #6c757d !important;
+        color: white !important;
+        border-color: #6c757d !important;
+    }
+
+    .btn-danger {
+        background: #dc3545 !important;
+        color: white !important;
+        border-color: #dc3545 !important;
+    }
+
+    .btn-warning {
+        background: #ffc107 !important;
+        color: #212529 !important;
+        border-color: #ffc107 !important;
+    }
+
+    /* Active states for mobile */
+    button:active, .btn:active, .btn-small:active {
+        transform: scale(0.95) !important;
+        opacity: 0.8 !important;
+    }
+
+    /* Close button fix for modals */
+    .close {
+        font-size: 2rem !important;
+        padding: 1rem !important;
+        min-width: 50px !important;
+        min-height: 50px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        position: absolute !important;
+        top: 10px !important;
+        right: 10px !important;
+        background: rgba(0,0,0,0.1) !important;
+        border-radius: 50% !important;
+        cursor: pointer !important;
+        z-index: 1000 !important;
+    }
+}
+
+/* Mobile device specific styles */
+.mobile-device {
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    -ms-user-select: none !important;
+    user-select: none !important;
+    -webkit-touch-callout: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+}
+
+.mobile-device button,
+.mobile-device .btn,
+.mobile-device .nav-btn,
+.mobile-device .close,
+.mobile-device .stat-card.clickable {
+    -webkit-appearance: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+    touch-action: manipulation !important;
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    -webkit-touch-callout: none !important;
+    cursor: pointer !important;
+    position: relative !important;
+    z-index: 10 !important;
+    pointer-events: auto !important;
+    min-height: 50px !important;
+    min-width: 50px !important;
+    border: 2px solid transparent !important;
+    border-radius: 8px !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    padding: 1rem !important;
+    transition: all 0.2s ease !important;
+}
+
+.mobile-device button:active,
+.mobile-device .btn:active,
+.mobile-device .nav-btn:active,
+.mobile-device .close:active,
+.mobile-device .stat-card.clickable:active {
+    transform: scale(0.95) !important;
+    opacity: 0.8 !important;
+}
+
+/* Force hardware acceleration on mobile */
+.mobile-device button,
+.mobile-device .btn,
+.mobile-device .stat-card {
+    -webkit-transform: translateZ(0) !important;
+    transform: translateZ(0) !important;
+    -webkit-backface-visibility: hidden !important;
+    backface-visibility: hidden !important;
+}
+
+/* Utility Classes */
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.text-left { text-align: left; }
+.mt-1 { margin-top: 0.5rem; }
+.mt-2 { margin-top: 1rem; }
+.mb-1 { margin-bottom: 0.5rem; }
+.mb-2 { margin-bottom: 1rem; }
+.p-1 { padding: 0.5rem; }
+.p-2 { padding: 1rem; }
+
+/* Success/Error Messages */
+.message {
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    display: none;
+}
+
+.message.success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.message.error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.message.show {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
