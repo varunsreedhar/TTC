@@ -303,6 +303,33 @@ class TTClubManager {
         }
     }
 
+    // Navigation method to switch between sections
+    showSection(targetSection) {
+        console.log('Showing section:', targetSection);
+
+        const navButtons = document.querySelectorAll('.nav-btn');
+        const sections = document.querySelectorAll('.section');
+
+        // Update active nav button
+        navButtons.forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.dataset.section === targetSection) {
+                btn.classList.add('active');
+            }
+        });
+
+        // Update active section
+        sections.forEach(section => {
+            section.classList.remove('active');
+            if (section.id === targetSection) {
+                section.classList.add('active');
+            }
+        });
+
+        // Update content based on section
+        this.updateSectionContent(targetSection);
+    }
+
     handleCloseButtonClick(button) {
         console.log('Close button clicked');
         const modal = button.closest('.modal');
@@ -637,17 +664,47 @@ class TTClubManager {
     setupNavigationMobileSupport() {
         console.log('Setting up navigation mobile support...');
 
-        // Also handle navigation buttons
+        // Only add mobile support if we're actually on mobile
+        const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+                         (window.innerWidth <= 768 && 'ontouchstart' in window);
+
+        if (!isMobile) {
+            console.log('Not on mobile, skipping navigation mobile support');
+            return;
+        }
+
+        // Handle navigation buttons for mobile only
         const navButtons = document.querySelectorAll('.nav-btn');
         navButtons.forEach(navBtn => {
             if (!navBtn.hasAttribute('data-mobile-nav-added')) {
                 navBtn.setAttribute('data-mobile-nav-added', 'true');
 
                 const section = navBtn.getAttribute('data-section');
-                this.addMobileTouchSupport(navBtn, () => {
-                    console.log(`Navigating to section: ${section}`);
-                    this.showSection(section);
-                }, `nav-${section}`);
+
+                // Add touch support that doesn't interfere with click
+                navBtn.addEventListener('touchend', (e) => {
+                    console.log(`Mobile touch navigation to: ${section}`);
+
+                    // Only prevent default if this is a pure touch event
+                    if (e.cancelable && !e.defaultPrevented) {
+                        e.preventDefault();
+
+                        // Add visual feedback
+                        navBtn.style.opacity = '0.6';
+                        navBtn.style.transform = 'scale(0.95)';
+
+                        setTimeout(() => {
+                            navBtn.style.opacity = '';
+                            navBtn.style.transform = '';
+
+                            this.showSection(section);
+                        }, 100);
+                    }
+                }, { passive: false });
+
+                // Add mobile styling
+                navBtn.style.touchAction = 'manipulation';
+                navBtn.style.webkitTapHighlightColor = 'transparent';
             }
         });
 
