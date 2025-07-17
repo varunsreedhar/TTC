@@ -507,6 +507,11 @@ class TTClubManager {
                 this.addCollectFeeButtonTouchSupport();
                 this.fixBasicMobileModals();
             }, 200);
+
+            // Apply mobile modal handlers after a longer delay to ensure all content is rendered
+            setTimeout(() => {
+                this.addMobileModalHandlers();
+            }, 500);
         } else {
             console.log('Desktop device, no mobile fixes needed');
         }
@@ -515,7 +520,7 @@ class TTClubManager {
     fixBasicMobileModals() {
         console.log('Applying basic mobile modal fixes...');
 
-        // Just ensure modals are properly sized for mobile
+        // Ensure modals are properly sized for mobile
         const modals = document.querySelectorAll('.modal');
         modals.forEach(modal => {
             const modalContent = modal.querySelector('.modal-content');
@@ -523,6 +528,113 @@ class TTClubManager {
                 modalContent.style.width = '95%';
                 modalContent.style.maxHeight = '90vh';
                 modalContent.style.overflowY = 'auto';
+            }
+        });
+
+        // Add specific mobile handlers for modal opening buttons
+        this.addMobileModalHandlers();
+    }
+
+    addMobileModalHandlers() {
+        console.log('Adding mobile modal handlers...');
+
+        // Define modal opening buttons and their corresponding functions
+        const modalButtons = [
+            { id: 'add-member-btn', func: () => this.openMemberModal() },
+            { id: 'collect-fee-btn', func: () => this.openFeeModal() },
+            { id: 'add-pending-fee-btn', func: () => this.openPendingFeeModal() },
+            { id: 'add-expense-btn', func: () => this.openExpenseModal() },
+            { id: 'add-contribution-btn', func: () => this.openContributionModal() },
+            { id: 'manage-fee-years-btn', func: () => this.openFeeYearsModal() },
+            { id: 'export-json', func: () => this.downloadDatabaseJSON() },
+            { id: 'import-json', func: () => document.getElementById('json-file-input').click() },
+            { id: 'reset-data', func: () => this.resetToOriginalData() }
+        ];
+
+        modalButtons.forEach(({ id, func }) => {
+            const button = document.getElementById(id);
+            if (button) {
+                console.log(`Adding mobile handler for button: ${id}`);
+
+                // Remove any existing mobile handlers
+                if (button.hasAttribute('data-mobile-handler-added')) {
+                    return;
+                }
+                button.setAttribute('data-mobile-handler-added', 'true');
+
+                // Add touch handler that directly calls the function
+                button.addEventListener('touchend', (e) => {
+                    console.log(`Mobile touch on ${id}, calling function directly`);
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    // Add visual feedback
+                    button.style.opacity = '0.7';
+                    button.style.transform = 'scale(0.95)';
+
+                    setTimeout(() => {
+                        button.style.opacity = '';
+                        button.style.transform = '';
+
+                        try {
+                            func();
+                            console.log(`Successfully called function for ${id}`);
+                        } catch (error) {
+                            console.error(`Error calling function for ${id}:`, error);
+                        }
+                    }, 100);
+                }, { passive: false });
+
+                // Also add touchstart for immediate visual feedback
+                button.addEventListener('touchstart', () => {
+                    button.style.opacity = '0.7';
+                    button.style.transform = 'scale(0.95)';
+                }, { passive: true });
+            } else {
+                console.warn(`Button with id ${id} not found`);
+            }
+        });
+
+        // Also handle navigation buttons
+        const navButtons = document.querySelectorAll('.nav-btn');
+        navButtons.forEach(navBtn => {
+            if (!navBtn.hasAttribute('data-mobile-nav-added')) {
+                navBtn.setAttribute('data-mobile-nav-added', 'true');
+
+                navBtn.addEventListener('touchend', (e) => {
+                    console.log('Mobile touch on nav button');
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const section = navBtn.getAttribute('data-section');
+                    if (section) {
+                        console.log(`Navigating to section: ${section}`);
+                        this.showSection(section);
+                    }
+                }, { passive: false });
+            }
+        });
+
+        // Handle close buttons
+        const closeButtons = document.querySelectorAll('.close');
+        closeButtons.forEach(closeBtn => {
+            if (!closeBtn.hasAttribute('data-mobile-close-added')) {
+                closeBtn.setAttribute('data-mobile-close-added', 'true');
+
+                closeBtn.addEventListener('touchend', (e) => {
+                    console.log('Mobile touch on close button');
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const modal = closeBtn.closest('.modal');
+                    if (modal) {
+                        modal.style.display = 'none';
+                        // Re-enable body scroll
+                        document.body.style.overflow = '';
+                        document.body.style.position = '';
+                        document.body.style.width = '';
+                    }
+                }, { passive: false });
             }
         });
     }
