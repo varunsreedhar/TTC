@@ -203,58 +203,85 @@ class TTClubManager {
     }
 
     setupMobileButtonSupport() {
-        console.log('Setting up mobile button support...');
+        console.log('Setting up simplified mobile button support...');
 
-        // Remove any existing listeners
-        if (this.globalButtonClickHandler) {
-            document.body.removeEventListener('click', this.globalButtonClickHandler);
-            document.body.removeEventListener('touchstart', this.globalButtonClickHandler);
+        // Only apply mobile fixes if actually on mobile
+        const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+                         (window.innerWidth <= 768 && 'ontouchstart' in window);
+
+        if (!isMobile) {
+            console.log('Not on mobile device, skipping mobile fixes');
+            return;
         }
 
-        // Create a comprehensive mobile button handler
-        this.globalButtonClickHandler = (e) => {
-            const button = e.target.closest('button, .btn, .nav-btn, .close, .stat-card.clickable');
-            if (!button) return;
+        console.log('Mobile device detected, applying targeted fixes...');
 
-            console.log('Mobile button/element clicked:', button.className, button.id);
+        // Simple approach: just fix onclick attributes for mobile
+        setTimeout(() => {
+            this.fixOnclickAttributesForMobile();
+        }, 100);
+    }
 
-            // Prevent default behavior
-            e.preventDefault();
-            e.stopPropagation();
+    fixOnclickAttributesForMobile() {
+        console.log('Fixing onclick attributes for mobile...');
 
-            // Handle different types of clickable elements
-            if (button.classList.contains('stat-card')) {
-                this.handleStatCardClick(button);
-            } else if (button.classList.contains('nav-btn')) {
-                this.handleNavButtonClick(button);
-            } else if (button.classList.contains('close')) {
-                this.handleCloseButtonClick(button);
-            } else {
-                this.handleRegularButtonClick(button);
+        // Find all elements with onclick attributes
+        const elementsWithOnclick = document.querySelectorAll('[onclick]');
+
+        elementsWithOnclick.forEach((element, index) => {
+            console.log(`Fixing onclick element ${index}:`, element.tagName, element.className, element.id);
+
+            const onclickCode = element.getAttribute('onclick');
+
+            // Store original onclick for reference
+            if (!element.hasAttribute('data-original-onclick')) {
+                element.setAttribute('data-original-onclick', onclickCode);
             }
-        };
 
-        // Add multiple event types for maximum compatibility
-        document.addEventListener('touchstart', this.globalButtonClickHandler, { passive: false });
-        document.addEventListener('touchend', this.globalButtonClickHandler, { passive: false });
-        document.addEventListener('click', this.globalButtonClickHandler, { passive: false });
+            // Add touch event listener as supplement (not replacement)
+            if (!element.hasAttribute('data-mobile-touch-added')) {
+                element.setAttribute('data-mobile-touch-added', 'true');
 
-        // Add visual feedback
-        document.addEventListener('touchstart', (e) => {
-            const button = e.target.closest('button, .btn, .stat-card.clickable');
-            if (button && !button.disabled) {
-                this.addButtonTouchFeedback(button);
+                element.addEventListener('touchstart', (e) => {
+                    // Add visual feedback
+                    element.style.opacity = '0.7';
+                    element.style.transform = 'scale(0.95)';
+                }, { passive: true });
+
+                element.addEventListener('touchend', (e) => {
+                    console.log('Touch end on element with onclick:', element.tagName, element.id);
+
+                    // Reset visual feedback
+                    element.style.opacity = '';
+                    element.style.transform = '';
+
+                    // For mobile browsers, sometimes click events don't fire properly
+                    // So we add a backup touch handler
+                    if (e.cancelable) {
+                        e.preventDefault();
+
+                        // Small delay to prevent double execution
+                        setTimeout(() => {
+                            try {
+                                console.log('Executing onclick via touch:', onclickCode.substring(0, 50) + '...');
+                                eval(onclickCode);
+                            } catch (error) {
+                                console.error('Error executing onclick on touch:', error);
+                            }
+                        }, 50);
+                    }
+                }, { passive: false });
             }
-        }, { passive: true });
 
-        document.addEventListener('touchend', (e) => {
-            const button = e.target.closest('button, .btn, .stat-card.clickable');
-            if (button) {
-                this.removeButtonTouchFeedback(button);
-            }
-        }, { passive: true });
+            // Ensure the element has proper mobile styling
+            element.style.touchAction = 'manipulation';
+            element.style.webkitTapHighlightColor = 'transparent';
+            element.style.cursor = 'pointer';
+            element.style.userSelect = 'none';
+            element.style.webkitUserSelect = 'none';
+        });
 
-        console.log('Mobile button support setup complete');
+        console.log(`Fixed ${elementsWithOnclick.length} elements with onclick attributes`);
     }
 
     handleStatCardClick(button) {
@@ -464,178 +491,43 @@ class TTClubManager {
     }
 
     initializeMobileSupport() {
-        console.log('Initializing comprehensive mobile support...');
+        console.log('Initializing mobile support...');
 
-        // Check if we're on mobile - more comprehensive detection
-        const isMobile = this.detectMobileDevice();
+        // Simple mobile detection
+        const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+                         (window.innerWidth <= 768 && 'ontouchstart' in window);
 
         console.log('Mobile detection result:', isMobile);
-        console.log('User agent:', navigator.userAgent);
-        console.log('Screen width:', window.innerWidth);
-        console.log('Touch support:', 'ontouchstart' in window);
 
         if (isMobile) {
-            console.log('Mobile device detected, applying aggressive mobile fixes...');
+            console.log('Mobile device detected, applying simple mobile fixes...');
 
-            // Apply mobile fixes immediately and with delays
-            this.applyImmediateMobileFixes();
-
+            // Apply basic mobile fixes
             setTimeout(() => {
                 this.addCollectFeeButtonTouchSupport();
-                this.fixMobileModals();
-                this.fixMobileNavigation();
-                this.addMobileScrollFixes();
-                this.addAggressiveMobileButtonFixes();
-            }, 100);
-
-            // Apply additional fixes after a longer delay
-            setTimeout(() => {
-                this.addFallbackMobileSupport();
-            }, 500);
-        }
-
-        // Always apply these fixes regardless of device
-        this.addUniversalButtonFixes();
-    }
-
-    detectMobileDevice() {
-        // Multiple detection methods for better accuracy
-        const userAgent = navigator.userAgent.toLowerCase();
-        const isMobileUA = /android|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile|tablet/i.test(userAgent);
-        const isMobileScreen = window.innerWidth <= 768;
-        const hasTouchSupport = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-        const isMobileOrientation = window.orientation !== undefined;
-
-        return isMobileUA || (isMobileScreen && hasTouchSupport) || isMobileOrientation;
-    }
-
-    applyImmediateMobileFixes() {
-        console.log('Applying immediate mobile fixes...');
-
-        // Disable text selection on the entire page
-        document.body.style.webkitUserSelect = 'none';
-        document.body.style.userSelect = 'none';
-        document.body.style.webkitTouchCallout = 'none';
-
-        // Add mobile-specific CSS class
-        document.body.classList.add('mobile-device');
-
-        // Fix viewport issues
-        const viewport = document.querySelector('meta[name="viewport"]');
-        if (viewport) {
-            viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no');
+                this.fixBasicMobileModals();
+            }, 200);
+        } else {
+            console.log('Desktop device, no mobile fixes needed');
         }
     }
 
-    addAggressiveMobileButtonFixes() {
-        console.log('Adding aggressive mobile button fixes...');
+    fixBasicMobileModals() {
+        console.log('Applying basic mobile modal fixes...');
 
-        // Remove all existing event listeners and re-add them
-        const allClickableElements = document.querySelectorAll('button, .btn, .nav-btn, .close, .stat-card.clickable, input[type="submit"], input[type="button"]');
-
-        allClickableElements.forEach((element, index) => {
-            console.log(`Fixing element ${index}:`, element.tagName, element.className, element.id);
-
-            // Clone element to remove all existing event listeners
-            const newElement = element.cloneNode(true);
-            element.parentNode.replaceChild(newElement, element);
-
-            // Apply mobile-specific styles
-            newElement.style.touchAction = 'manipulation';
-            newElement.style.webkitTapHighlightColor = 'transparent';
-            newElement.style.webkitUserSelect = 'none';
-            newElement.style.userSelect = 'none';
-            newElement.style.webkitTouchCallout = 'none';
-            newElement.style.cursor = 'pointer';
-            newElement.style.position = 'relative';
-            newElement.style.zIndex = '10';
-
-            // Add comprehensive event listeners
-            this.addComprehensiveEventListeners(newElement);
+        // Just ensure modals are properly sized for mobile
+        const modals = document.querySelectorAll('.modal');
+        modals.forEach(modal => {
+            const modalContent = modal.querySelector('.modal-content');
+            if (modalContent) {
+                modalContent.style.width = '95%';
+                modalContent.style.maxHeight = '90vh';
+                modalContent.style.overflowY = 'auto';
+            }
         });
     }
 
-    addComprehensiveEventListeners(element) {
-        const eventHandler = (e) => {
-            console.log('Mobile event triggered:', e.type, 'on', element.tagName, element.className, element.id);
 
-            // Prevent default behavior
-            e.preventDefault();
-            e.stopPropagation();
-            e.stopImmediatePropagation();
-
-            // Add visual feedback
-            element.style.opacity = '0.7';
-            element.style.transform = 'scale(0.95)';
-
-            setTimeout(() => {
-                element.style.opacity = '';
-                element.style.transform = '';
-            }, 200);
-
-            // Handle the click based on element type
-            this.handleMobileElementClick(element);
-        };
-
-        // Add multiple event types for maximum compatibility
-        element.addEventListener('touchstart', eventHandler, { passive: false });
-        element.addEventListener('touchend', eventHandler, { passive: false });
-        element.addEventListener('click', eventHandler, { passive: false });
-        element.addEventListener('mousedown', eventHandler, { passive: false });
-        element.addEventListener('mouseup', eventHandler, { passive: false });
-    }
-
-    handleMobileElementClick(element) {
-        console.log('Handling mobile element click:', element.tagName, element.className, element.id);
-
-        // Handle different types of elements
-        if (element.classList.contains('stat-card')) {
-            this.handleStatCardClick(element);
-        } else if (element.classList.contains('nav-btn')) {
-            this.handleNavButtonClick(element);
-        } else if (element.classList.contains('close')) {
-            this.handleCloseButtonClick(element);
-        } else {
-            this.handleRegularButtonClick(element);
-        }
-    }
-
-    addFallbackMobileSupport() {
-        console.log('Adding fallback mobile support...');
-
-        // Add a global touch handler as absolute fallback
-        document.addEventListener('touchend', (e) => {
-            const target = e.target;
-            const clickable = target.closest('button, .btn, .nav-btn, .close, .stat-card.clickable');
-
-            if (clickable) {
-                console.log('Fallback touch handler activated for:', clickable.tagName, clickable.className);
-
-                e.preventDefault();
-                e.stopPropagation();
-
-                // Trigger click programmatically
-                setTimeout(() => {
-                    this.handleMobileElementClick(clickable);
-                }, 50);
-            }
-        }, { passive: false });
-
-        // Add a global click handler as another fallback
-        document.addEventListener('click', (e) => {
-            const target = e.target;
-            const clickable = target.closest('button, .btn, .nav-btn, .close, .stat-card.clickable');
-
-            if (clickable && this.detectMobileDevice()) {
-                console.log('Fallback click handler activated for:', clickable.tagName, clickable.className);
-
-                e.preventDefault();
-                e.stopPropagation();
-
-                this.handleMobileElementClick(clickable);
-            }
-        }, { passive: false });
-    }
 
     fixMobileModals() {
         console.log('Fixing mobile modals...');
