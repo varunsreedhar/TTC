@@ -1373,11 +1373,9 @@ class TTClubManager {
         this.updateMemberCount(filteredMembers.length);
 
         // Add touch support for dynamically created buttons (mobile)
-        if (window.innerWidth <= 768) {
-            setTimeout(() => {
-                this.addCollectFeeButtonTouchSupport();
-            }, 100);
-        }
+        setTimeout(() => {
+            this.addCollectFeeButtonTouchSupport();
+        }, 100);
     }
 
     hasUnpaidFees(member) {
@@ -1751,11 +1749,9 @@ class TTClubManager {
         `).join('');
 
         // Add mobile touch support for pending fee buttons
-        if (window.innerWidth <= 768) {
-            setTimeout(() => {
-                this.addCollectFeeButtonTouchSupport();
-            }, 100);
-        }
+        setTimeout(() => {
+            this.addCollectFeeButtonTouchSupport();
+        }, 100);
     }
 
     collectPendingFee(pendingId) {
