@@ -129,6 +129,7 @@ class TTClubManager {
             this.setupNavigation();
             this.setupNavigationDropdowns();
             this.setupSubsectionNavigation();
+            this.addMobileDebugging();
             this.setupModals();
             this.setupEventListeners();
             this.setupMobileEnhancements();
@@ -140,6 +141,7 @@ class TTClubManager {
 
             // Initialize comprehensive mobile support
             this.initializeMobileSupport();
+            this.setupResponsiveHandlers();
 
             console.log('App initialization completed successfully');
         } catch (error) {
@@ -147,6 +149,47 @@ class TTClubManager {
             this.showMessage('Error initializing application: ' + error.message, 'error');
         } finally {
             this.hideLoading();
+        }
+    }
+
+    setupResponsiveHandlers() {
+        // Handle window resize and orientation changes
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                this.handleResponsiveChanges();
+            }, 250);
+        });
+
+        // Handle orientation change
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+                this.handleResponsiveChanges();
+            }, 500);
+        });
+    }
+
+    handleResponsiveChanges() {
+        console.log('Handling responsive changes...');
+
+        // Close any open dropdowns
+        const dropdowns = document.querySelectorAll('.nav-dropdown');
+        dropdowns.forEach(dropdown => {
+            dropdown.classList.remove('active');
+        });
+
+        // Close notification dropdown
+        const notificationDropdown = document.getElementById('notification-dropdown');
+        if (notificationDropdown) {
+            notificationDropdown.style.display = 'none';
+        }
+
+        // Update mobile class on body
+        if (this.isMobileDevice() || window.innerWidth <= 768) {
+            document.body.classList.add('mobile-device');
+        } else {
+            document.body.classList.remove('mobile-device');
         }
     }
 
@@ -1239,7 +1282,38 @@ class TTClubManager {
             dropdown.style.display = 'none';
         } else {
             this.populateNotificationDropdown();
+            this.positionNotificationDropdown();
             dropdown.style.display = 'block';
+        }
+    }
+
+    positionNotificationDropdown() {
+        const dropdown = document.getElementById('notification-dropdown');
+        if (!dropdown) return;
+
+        // Check if mobile
+        if (this.isMobileDevice() || window.innerWidth <= 768) {
+            // Mobile positioning is handled by CSS
+            dropdown.classList.add('mobile-positioned');
+        } else {
+            // Desktop positioning
+            dropdown.classList.remove('mobile-positioned');
+
+            // Position relative to notification icon
+            const notificationIcon = document.querySelector('.notification-icon-container');
+            if (notificationIcon) {
+                const rect = notificationIcon.getBoundingClientRect();
+                const dropdownRect = dropdown.getBoundingClientRect();
+
+                // Check if dropdown would go off-screen
+                if (rect.right - dropdownRect.width < 10) {
+                    dropdown.style.right = '10px';
+                    dropdown.style.left = 'auto';
+                } else {
+                    dropdown.style.right = '0';
+                    dropdown.style.left = 'auto';
+                }
+            }
         }
     }
 
@@ -1847,14 +1921,28 @@ class TTClubManager {
         console.log('Setting up navigation dropdowns...');
 
         const navDropdowns = document.querySelectorAll('.nav-dropdown');
+        console.log('Found navigation dropdowns:', navDropdowns.length);
 
-        navDropdowns.forEach(dropdown => {
+        navDropdowns.forEach((dropdown, index) => {
             const toggleBtn = dropdown.querySelector('.dropdown-toggle');
             const menu = dropdown.querySelector('.nav-dropdown-menu');
             const items = dropdown.querySelectorAll('.nav-dropdown-item');
 
-            // Toggle dropdown on click
-            toggleBtn.addEventListener('click', (e) => {
+            console.log(`Setting up dropdown ${index}:`, {
+                toggleBtn: !!toggleBtn,
+                menu: !!menu,
+                items: items.length
+            });
+
+            if (!toggleBtn) {
+                console.error('Toggle button not found for dropdown', index);
+                return;
+            }
+
+            // Create toggle function
+            const toggleDropdown = (e) => {
+                console.log('Toggle dropdown clicked', index);
+                e.preventDefault();
                 e.stopPropagation();
 
                 // Close other dropdowns
@@ -1865,16 +1953,44 @@ class TTClubManager {
                 });
 
                 // Toggle current dropdown
-                dropdown.classList.toggle('active');
-            });
+                const isActive = dropdown.classList.contains('active');
+                if (isActive) {
+                    dropdown.classList.remove('active');
+                    console.log('Dropdown closed');
+                } else {
+                    dropdown.classList.add('active');
+                    console.log('Dropdown opened');
+                }
+            };
+
+            // Add multiple event listeners for better mobile compatibility
+            toggleBtn.addEventListener('click', toggleDropdown);
+            toggleBtn.addEventListener('touchend', toggleDropdown, { passive: false });
+
+            // Add visual feedback for mobile
+            toggleBtn.addEventListener('touchstart', (e) => {
+                toggleBtn.style.backgroundColor = 'rgba(255,255,255,0.1)';
+                toggleBtn.style.transform = 'scale(0.98)';
+            }, { passive: true });
+
+            toggleBtn.addEventListener('touchcancel', () => {
+                toggleBtn.style.backgroundColor = '';
+                toggleBtn.style.transform = '';
+            }, { passive: true });
 
             // Handle dropdown item clicks
-            items.forEach(item => {
-                item.addEventListener('click', (e) => {
+            items.forEach((item, itemIndex) => {
+                console.log(`Setting up dropdown item ${itemIndex}`);
+
+                const handleItemClick = (e) => {
+                    console.log('Dropdown item clicked:', itemIndex);
+                    e.preventDefault();
                     e.stopPropagation();
 
                     const section = item.getAttribute('data-section');
                     const subsection = item.getAttribute('data-subsection');
+
+                    console.log('Navigating to:', section, subsection);
 
                     // Close dropdown
                     dropdown.classList.remove('active');
@@ -1885,16 +2001,76 @@ class TTClubManager {
                     // Update active states
                     items.forEach(i => i.classList.remove('active'));
                     item.classList.add('active');
-                });
+                };
+
+                // Add multiple event listeners for mobile compatibility
+                item.addEventListener('click', handleItemClick);
+                item.addEventListener('touchend', handleItemClick, { passive: false });
+
+                // Add visual feedback for mobile
+                item.addEventListener('touchstart', () => {
+                    item.style.backgroundColor = '#e3f2fd';
+                    item.style.transform = 'translateX(3px)';
+                }, { passive: true });
+
+                item.addEventListener('touchcancel', () => {
+                    item.style.backgroundColor = '';
+                    item.style.transform = '';
+                }, { passive: true });
             });
         });
 
-        // Close dropdowns when clicking outside
-        document.addEventListener('click', () => {
+        // Close dropdowns when clicking/touching outside
+        const closeDropdowns = () => {
             navDropdowns.forEach(dropdown => {
                 dropdown.classList.remove('active');
             });
-        });
+        };
+
+        document.addEventListener('click', closeDropdowns);
+        document.addEventListener('touchstart', closeDropdowns, { passive: true });
+    }
+
+    // Mobile Debugging
+    addMobileDebugging() {
+        // Add mobile debugging info
+        if (this.isMobileDevice()) {
+            console.log('Mobile device detected - adding debugging');
+
+            // Add visual indicator for touch events
+            const debugStyle = document.createElement('style');
+            debugStyle.textContent = `
+                .nav-dropdown.debug-active {
+                    background: rgba(255, 0, 0, 0.1) !important;
+                    border: 2px solid red !important;
+                }
+                .nav-dropdown-item.debug-touched {
+                    background: rgba(0, 255, 0, 0.2) !important;
+                }
+            `;
+            document.head.appendChild(debugStyle);
+
+            // Add touch debugging to dropdowns
+            setTimeout(() => {
+                const dropdowns = document.querySelectorAll('.nav-dropdown');
+                dropdowns.forEach((dropdown, index) => {
+                    const toggleBtn = dropdown.querySelector('.dropdown-toggle');
+                    if (toggleBtn) {
+                        toggleBtn.addEventListener('touchstart', () => {
+                            console.log(`Touch start on dropdown ${index}`);
+                            dropdown.classList.add('debug-active');
+                        }, { passive: true });
+
+                        toggleBtn.addEventListener('touchend', () => {
+                            console.log(`Touch end on dropdown ${index}`);
+                            setTimeout(() => {
+                                dropdown.classList.remove('debug-active');
+                            }, 1000);
+                        }, { passive: true });
+                    }
+                });
+            }, 1000);
+        }
     }
 
     // Subsection Navigation Setup
