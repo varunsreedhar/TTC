@@ -616,6 +616,9 @@ class TTClubManager {
         });
 
         console.log(`Added mobile handlers for ${allButtons.length} buttons`);
+
+        // Also handle form submit buttons specifically
+        this.addMobileFormSupport();
     }
 
     addMobileTouchSupport(button, func, buttonId) {
@@ -659,6 +662,58 @@ class TTClubManager {
         button.style.userSelect = 'none';
         button.style.webkitUserSelect = 'none';
         button.style.cursor = 'pointer';
+    }
+
+    addMobileFormSupport() {
+        console.log('Adding mobile form support...');
+
+        // Define all forms and their submit functions
+        const formHandlers = [
+            { formId: 'member-form', func: () => this.saveMember(), buttonText: 'Save Member' },
+            { formId: 'fee-form', func: () => this.collectFee(), buttonText: 'Collect Fee' },
+            { formId: 'expense-form', func: () => this.saveExpense(), buttonText: 'Save Expense' },
+            { formId: 'contribution-form', func: () => this.saveContribution(), buttonText: 'Save Contribution' },
+            { formId: 'pending-fee-form', func: () => this.savePendingFee(), buttonText: 'Save Pending Fee' },
+            { formId: 'add-fee-year-form', func: () => this.addFeeYear(), buttonText: 'Add Fee Year' },
+            { formId: 'edit-member-fee-form', func: () => this.updateMemberFee(), buttonText: 'Update Fee' }
+        ];
+
+        formHandlers.forEach(({ formId, func, buttonText }) => {
+            const form = document.getElementById(formId);
+            if (form) {
+                console.log(`Adding mobile support for form: ${formId}`);
+
+                // Find the submit button in the form
+                const submitButton = form.querySelector('button[type="submit"], input[type="submit"], .btn-primary');
+
+                if (submitButton && !submitButton.hasAttribute('data-mobile-form-added')) {
+                    submitButton.setAttribute('data-mobile-form-added', 'true');
+
+                    console.log(`Adding mobile touch support to submit button for ${formId}`);
+
+                    // Add mobile touch support for the submit button
+                    this.addMobileTouchSupport(submitButton, () => {
+                        console.log(`Mobile form submission for ${formId}`);
+
+                        // Validate form first
+                        if (form.checkValidity && !form.checkValidity()) {
+                            console.log(`Form ${formId} validation failed`);
+                            form.reportValidity();
+                            return;
+                        }
+
+                        // Execute the form submission function
+                        func();
+                    }, `form-${formId}`);
+                } else if (!submitButton) {
+                    console.warn(`No submit button found for form: ${formId}`);
+                }
+            } else {
+                console.warn(`Form not found: ${formId}`);
+            }
+        });
+
+        console.log('Mobile form support added');
     }
 
     setupNavigationMobileSupport() {
