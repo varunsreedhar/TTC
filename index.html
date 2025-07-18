@@ -19,6 +19,28 @@
                 <h1>Passion Hills Table Tennis Club</h1>
             </div>
             <div class="header-actions">
+                <div class="notification-icon-container" onclick="ttClub.toggleNotificationDropdown()">
+                    <i class="fas fa-bell notification-bell"></i>
+                    <span id="notification-badge" class="notification-badge" style="display: none;">0</span>
+
+                    <!-- Notification Dropdown -->
+                    <div id="notification-dropdown" class="notification-dropdown" style="display: none;">
+                        <div class="notification-dropdown-header">
+                            <h3>Upcoming Events</h3>
+                            <button class="btn-close-dropdown" onclick="ttClub.closeNotificationDropdown()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div id="notification-dropdown-content" class="notification-dropdown-content">
+                            <!-- Upcoming events will be populated here -->
+                        </div>
+                        <div class="notification-dropdown-footer">
+                            <button class="btn btn-primary btn-small" onclick="ttClub.viewAllEvents()">
+                                <i class="fas fa-calendar-alt"></i> View All Events
+                            </button>
+                        </div>
+                    </div>
+                </div>
                 <button class="btn btn-success btn-small" id="quick-save" title="Save Data">
                     <i class="fas fa-save"></i>
                 </button>
@@ -29,17 +51,91 @@
                     <button class="nav-btn" data-section="members">
                         <i class="fas fa-users"></i> Members
                     </button>
-                    <button class="nav-btn" data-section="fees">
-                        <i class="fas fa-money-bill-wave"></i> Fees
-                    </button>
-                    <button class="nav-btn" data-section="invoices">
-                        <i class="fas fa-file-invoice"></i> Invoices
-                    </button>
-                    <button class="nav-btn" data-section="expenses">
-                        <i class="fas fa-receipt"></i> Expenses
-                    </button>
-                    <button class="nav-btn" data-section="contributions">
-                        <i class="fas fa-hand-holding-usd"></i> Contributions
+                    <div class="nav-dropdown">
+                        <button class="nav-btn dropdown-toggle" data-section="financial">
+                            <i class="fas fa-coins"></i> Financial Management
+                            <i class="fas fa-chevron-down dropdown-arrow"></i>
+                        </button>
+                        <div class="nav-dropdown-menu financial-menu">
+                            <!-- Fees Section -->
+                            <div class="dropdown-section">
+                                <div class="dropdown-section-header">
+                                    <i class="fas fa-money-bill-wave"></i> Fees
+                                </div>
+                                <button class="nav-dropdown-item" data-section="fees" data-subsection="collection">
+                                    <i class="fas fa-hand-holding-usd"></i> Fee Collection
+                                </button>
+                                <button class="nav-dropdown-item" data-section="fees" data-subsection="pending">
+                                    <i class="fas fa-clock"></i> Pending Fees
+                                </button>
+                                <button class="nav-dropdown-item" data-section="fees" data-subsection="years">
+                                    <i class="fas fa-calendar-check"></i> Fee Years
+                                </button>
+                                <button class="nav-dropdown-item" data-section="fees" data-subsection="reports">
+                                    <i class="fas fa-chart-line"></i> Fee Reports
+                                </button>
+                            </div>
+
+                            <!-- Invoices Section -->
+                            <div class="dropdown-section">
+                                <div class="dropdown-section-header">
+                                    <i class="fas fa-file-invoice"></i> Invoices
+                                </div>
+                                <button class="nav-dropdown-item" data-section="invoices" data-subsection="generate">
+                                    <i class="fas fa-file-plus"></i> Generate Invoice
+                                </button>
+                                <button class="nav-dropdown-item" data-section="invoices" data-subsection="manage">
+                                    <i class="fas fa-list"></i> Manage Invoices
+                                </button>
+                                <button class="nav-dropdown-item" data-section="invoices" data-subsection="templates">
+                                    <i class="fas fa-file-alt"></i> Invoice Templates
+                                </button>
+                                <button class="nav-dropdown-item" data-section="invoices" data-subsection="reports">
+                                    <i class="fas fa-chart-bar"></i> Invoice Reports
+                                </button>
+                            </div>
+
+                            <!-- Expenses Section -->
+                            <div class="dropdown-section">
+                                <div class="dropdown-section-header">
+                                    <i class="fas fa-receipt"></i> Expenses
+                                </div>
+                                <button class="nav-dropdown-item" data-section="expenses" data-subsection="add">
+                                    <i class="fas fa-plus"></i> Add Expense
+                                </button>
+                                <button class="nav-dropdown-item" data-section="expenses" data-subsection="manage">
+                                    <i class="fas fa-list"></i> Manage Expenses
+                                </button>
+                                <button class="nav-dropdown-item" data-section="expenses" data-subsection="categories">
+                                    <i class="fas fa-tags"></i> Categories
+                                </button>
+                                <button class="nav-dropdown-item" data-section="expenses" data-subsection="reports">
+                                    <i class="fas fa-chart-line"></i> Expense Reports
+                                </button>
+                            </div>
+
+                            <!-- Contributions Section -->
+                            <div class="dropdown-section">
+                                <div class="dropdown-section-header">
+                                    <i class="fas fa-hand-holding-usd"></i> Contributions
+                                </div>
+                                <button class="nav-dropdown-item" data-section="contributions" data-subsection="add">
+                                    <i class="fas fa-plus"></i> Add Contribution
+                                </button>
+                                <button class="nav-dropdown-item" data-section="contributions" data-subsection="manage">
+                                    <i class="fas fa-list"></i> Manage Contributions
+                                </button>
+                                <button class="nav-dropdown-item" data-section="contributions" data-subsection="types">
+                                    <i class="fas fa-category"></i> Contribution Types
+                                </button>
+                                <button class="nav-dropdown-item" data-section="contributions" data-subsection="reports">
+                                    <i class="fas fa-chart-pie"></i> Contribution Reports
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="nav-btn" data-section="events">
+                        <i class="fas fa-calendar-alt"></i> Events
                     </button>
                     <button class="nav-btn" data-section="reports">
                         <i class="fas fa-chart-bar"></i> Reports
@@ -156,43 +252,101 @@
             <section id="fees" class="section">
                 <div class="section-header">
                     <h2>Fee Management</h2>
-                    <div class="fee-header-actions">
-                        <button class="btn btn-secondary" id="manage-fee-years-btn">
-                            <i class="fas fa-calendar-plus"></i> Manage Fee Years
+                    <div class="fee-subsection-nav">
+                        <button class="subsection-btn active" data-subsection="collection">
+                            <i class="fas fa-hand-holding-usd"></i> Fee Collection
                         </button>
+                        <button class="subsection-btn" data-subsection="pending">
+                            <i class="fas fa-clock"></i> Pending Fees
+                        </button>
+                        <button class="subsection-btn" data-subsection="years">
+                            <i class="fas fa-calendar-check"></i> Fee Years
+                        </button>
+                        <button class="subsection-btn" data-subsection="reports">
+                            <i class="fas fa-chart-line"></i> Fee Reports
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Fee Collection Subsection -->
+                <div id="fee-collection" class="fee-subsection active">
+                    <div class="subsection-header">
+                        <h3>Fee Collection</h3>
                         <button class="btn btn-primary" id="collect-fee-btn">
                             <i class="fas fa-money-bill-wave"></i> Collect Fee
                         </button>
                     </div>
-                </div>
-                
-                <div class="fee-summary">
-                    <div class="fee-card">
-                        <h3>Annual Fee 2023</h3>
-                        <p>Collected: <span id="fee-2023-collected">₹0</span></p>
-                        <p>Pending: <span id="fee-2023-pending">₹0</span></p>
-                    </div>
-                    <div class="fee-card">
-                        <h3>Annual Fee 2024</h3>
-                        <p>Collected: <span id="fee-2024-collected">₹0</span></p>
-                        <p>Pending: <span id="fee-2024-pending">₹0</span></p>
-                    </div>
-                    <div class="fee-card">
-                        <h3>Annual Fee 2025</h3>
-                        <p>Collected: <span id="fee-2025-collected">₹0</span></p>
-                        <p>Pending: <span id="fee-2025-pending">₹0</span></p>
+                    <div class="fee-summary">
+                        <div class="fee-card">
+                            <h3>Annual Fee 2023</h3>
+                            <p>Collected: <span id="fee-2023-collected">₹0</span></p>
+                            <p>Pending: <span id="fee-2023-pending">₹0</span></p>
+                        </div>
+                        <div class="fee-card">
+                            <h3>Annual Fee 2024</h3>
+                            <p>Collected: <span id="fee-2024-collected">₹0</span></p>
+                            <p>Pending: <span id="fee-2024-pending">₹0</span></p>
+                        </div>
+                        <div class="fee-card">
+                            <h3>Annual Fee 2025</h3>
+                            <p>Collected: <span id="fee-2025-collected">₹0</span></p>
+                            <p>Pending: <span id="fee-2025-pending">₹0</span></p>
+                        </div>
                     </div>
                 </div>
 
-                <div class="pending-fees">
-                    <div class="pending-fees-header">
+                <!-- Pending Fees Subsection -->
+                <div id="fee-pending" class="fee-subsection">
+                    <div class="subsection-header">
                         <h3>Pending Fee Collections</h3>
-                        <button class="btn btn-secondary btn-small" id="add-pending-fee-btn">
+                        <button class="btn btn-secondary" id="add-pending-fee-btn">
                             <i class="fas fa-plus"></i> Add Pending Fee
                         </button>
                     </div>
                     <div id="pending-fees-list" class="pending-list">
                         <p class="empty-state">No pending fees added. Click "Add Pending Fee" to create pending fee records.</p>
+                    </div>
+                </div>
+
+                <!-- Fee Years Subsection -->
+                <div id="fee-years" class="fee-subsection">
+                    <div class="subsection-header">
+                        <h3>Fee Years Management</h3>
+                        <button class="btn btn-primary" id="manage-fee-years-btn">
+                            <i class="fas fa-calendar-plus"></i> Manage Fee Years
+                        </button>
+                    </div>
+                    <div class="fee-years-content">
+                        <p>Manage fee years and amounts for different periods.</p>
+                        <!-- Fee years management content will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Fee Reports Subsection -->
+                <div id="fee-reports" class="fee-subsection">
+                    <div class="subsection-header">
+                        <h3>Fee Reports & Analytics</h3>
+                        <div class="report-actions">
+                            <button class="btn btn-success btn-small" id="export-fee-report">
+                                <i class="fas fa-download"></i> Export Report
+                            </button>
+                        </div>
+                    </div>
+                    <div class="fee-reports-content">
+                        <div class="report-summary">
+                            <div class="report-card">
+                                <h4>Total Collections</h4>
+                                <p class="report-value" id="total-collections">₹0</p>
+                            </div>
+                            <div class="report-card">
+                                <h4>Pending Amount</h4>
+                                <p class="report-value" id="total-pending">₹0</p>
+                            </div>
+                            <div class="report-card">
+                                <h4>Collection Rate</h4>
+                                <p class="report-value" id="collection-rate">0%</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -201,13 +355,89 @@
             <section id="invoices" class="section">
                 <div class="section-header">
                     <h2>Invoice Management</h2>
-                    <button class="btn btn-primary" id="generate-invoice-btn">
-                        <i class="fas fa-file-plus"></i> Generate Invoice
-                    </button>
+                    <div class="invoice-subsection-nav">
+                        <button class="subsection-btn active" data-subsection="generate">
+                            <i class="fas fa-file-plus"></i> Generate Invoice
+                        </button>
+                        <button class="subsection-btn" data-subsection="manage">
+                            <i class="fas fa-list"></i> Manage Invoices
+                        </button>
+                        <button class="subsection-btn" data-subsection="templates">
+                            <i class="fas fa-file-alt"></i> Templates
+                        </button>
+                        <button class="subsection-btn" data-subsection="reports">
+                            <i class="fas fa-chart-bar"></i> Reports
+                        </button>
+                    </div>
                 </div>
-                
-                <div class="invoice-list" id="invoice-list">
-                    <!-- Invoices will be populated by JavaScript -->
+
+                <!-- Generate Invoice Subsection -->
+                <div id="invoice-generate" class="invoice-subsection active">
+                    <div class="subsection-header">
+                        <h3>Generate Invoice</h3>
+                        <button class="btn btn-primary" id="generate-invoice-btn">
+                            <i class="fas fa-file-plus"></i> Create New Invoice
+                        </button>
+                    </div>
+                    <div class="invoice-generation-content">
+                        <p>Generate invoices for members, events, or custom billing.</p>
+                        <!-- Invoice generation form will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Manage Invoices Subsection -->
+                <div id="invoice-manage" class="invoice-subsection">
+                    <div class="subsection-header">
+                        <h3>Manage Invoices</h3>
+                        <div class="invoice-actions">
+                            <button class="btn btn-secondary btn-small" id="filter-invoices">
+                                <i class="fas fa-filter"></i> Filter
+                            </button>
+                        </div>
+                    </div>
+                    <div class="invoice-list" id="invoice-list">
+                        <!-- Invoices will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Invoice Templates Subsection -->
+                <div id="invoice-templates" class="invoice-subsection">
+                    <div class="subsection-header">
+                        <h3>Invoice Templates</h3>
+                        <button class="btn btn-primary" id="create-template-btn">
+                            <i class="fas fa-plus"></i> Create Template
+                        </button>
+                    </div>
+                    <div class="templates-content">
+                        <p>Manage invoice templates for different types of billing.</p>
+                        <!-- Templates will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Invoice Reports Subsection -->
+                <div id="invoice-reports" class="invoice-subsection">
+                    <div class="subsection-header">
+                        <h3>Invoice Reports</h3>
+                        <button class="btn btn-success" id="export-invoice-report">
+                            <i class="fas fa-download"></i> Export Report
+                        </button>
+                    </div>
+                    <div class="invoice-reports-content">
+                        <div class="report-summary">
+                            <div class="report-card">
+                                <h4>Total Invoices</h4>
+                                <p class="report-value" id="total-invoices">0</p>
+                            </div>
+                            <div class="report-card">
+                                <h4>Total Amount</h4>
+                                <p class="report-value" id="total-invoice-amount">₹0</p>
+                            </div>
+                            <div class="report-card">
+                                <h4>Paid Invoices</h4>
+                                <p class="report-value" id="paid-invoices">0</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -215,63 +445,134 @@
             <section id="expenses" class="section">
                 <div class="section-header">
                     <h2>Expense Management</h2>
-                    <button class="btn btn-primary" id="add-expense-btn">
-                        <i class="fas fa-plus"></i> Add Expense
-                    </button>
-                </div>
-
-                <div class="expense-summary">
-                    <div class="expense-card">
-                        <h3>Total Expenses</h3>
-                        <p id="total-expenses">₹0</p>
-                    </div>
-                    <div class="expense-card">
-                        <h3>This Month</h3>
-                        <p id="month-expenses">₹0</p>
-                    </div>
-                    <div class="expense-card">
-                        <h3>Pending Reimbursements</h3>
-                        <p id="pending-reimbursements">₹0</p>
+                    <div class="expense-subsection-nav">
+                        <button class="subsection-btn active" data-subsection="add">
+                            <i class="fas fa-plus"></i> Add Expense
+                        </button>
+                        <button class="subsection-btn" data-subsection="manage">
+                            <i class="fas fa-list"></i> Manage Expenses
+                        </button>
+                        <button class="subsection-btn" data-subsection="categories">
+                            <i class="fas fa-tags"></i> Categories
+                        </button>
+                        <button class="subsection-btn" data-subsection="reports">
+                            <i class="fas fa-chart-line"></i> Reports
+                        </button>
                     </div>
                 </div>
 
-                <div class="expense-filters">
-                    <input type="text" id="expense-search" placeholder="Search expenses..." class="search-input">
-                    <select id="expense-category-filter" class="filter-select">
-                        <option value="">All Categories</option>
-                        <option value="Equipment">Equipment</option>
-                        <option value="Maintenance">Maintenance</option>
-                        <option value="Events">Events</option>
-                        <option value="Utilities">Utilities</option>
-                        <option value="Other">Other</option>
-                    </select>
-                    <select id="expense-status-filter" class="filter-select">
-                        <option value="">All Status</option>
-                        <option value="Paid">Paid</option>
-                        <option value="Pending">Pending</option>
-                        <option value="Reimbursed">Reimbursed</option>
-                    </select>
+                <!-- Add Expense Subsection -->
+                <div id="expense-add" class="expense-subsection active">
+                    <div class="subsection-header">
+                        <h3>Add Expense</h3>
+                        <button class="btn btn-primary" id="add-expense-btn">
+                            <i class="fas fa-plus"></i> Create New Expense
+                        </button>
+                    </div>
+                    <div class="expense-add-content">
+                        <p>Add new expenses for club activities, equipment, and maintenance.</p>
+                        <!-- Expense form will be populated by JavaScript -->
+                    </div>
                 </div>
 
-                <div class="table-container">
-                    <div class="mobile-scroll-hint">← Scroll horizontally to see all columns →</div>
-                    <table class="expenses-table">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Description</th>
-                                <th>Category</th>
-                                <th>Amount</th>
-                                <th>Paid By</th>
-                                <th>Status</th>
-                                <th>Receipt</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="expenses-table-body">
-                            <!-- Expenses will be populated by JavaScript -->
-                        </tbody>
-                    </table>
+                <!-- Manage Expenses Subsection -->
+                <div id="expense-manage" class="expense-subsection">
+                    <div class="subsection-header">
+                        <h3>Manage Expenses</h3>
+                        <div class="expense-summary">
+                            <div class="expense-card">
+                                <h4>Total Expenses</h4>
+                                <p id="total-expenses">₹0</p>
+                            </div>
+                            <div class="expense-card">
+                                <h4>This Month</h4>
+                                <p id="month-expenses">₹0</p>
+                            </div>
+                            <div class="expense-card">
+                                <h4>Pending</h4>
+                                <p id="pending-reimbursements">₹0</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="expense-filters">
+                        <input type="text" id="expense-search" placeholder="Search expenses..." class="search-input">
+                        <select id="expense-category-filter" class="filter-select">
+                            <option value="">All Categories</option>
+                            <option value="Equipment">Equipment</option>
+                            <option value="Maintenance">Maintenance</option>
+                            <option value="Events">Events</option>
+                            <option value="Utilities">Utilities</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        <select id="expense-status-filter" class="filter-select">
+                            <option value="">All Status</option>
+                            <option value="Paid">Paid</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Reimbursed">Reimbursed</option>
+                        </select>
+                    </div>
+
+                    <div class="table-container">
+                        <div class="mobile-scroll-hint">← Scroll horizontally to see all columns →</div>
+                        <table class="expenses-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Description</th>
+                                    <th>Category</th>
+                                    <th>Amount</th>
+                                    <th>Paid By</th>
+                                    <th>Status</th>
+                                    <th>Receipt</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="expenses-table-body">
+                                <!-- Expenses will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Categories Subsection -->
+                <div id="expense-categories" class="expense-subsection">
+                    <div class="subsection-header">
+                        <h3>Expense Categories</h3>
+                        <button class="btn btn-primary" id="manage-categories-btn">
+                            <i class="fas fa-cog"></i> Manage Categories
+                        </button>
+                    </div>
+                    <div class="categories-content">
+                        <p>Manage expense categories for better organization and reporting.</p>
+                        <!-- Categories management will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Expense Reports Subsection -->
+                <div id="expense-reports" class="expense-subsection">
+                    <div class="subsection-header">
+                        <h3>Expense Reports</h3>
+                        <button class="btn btn-success" id="export-expense-report">
+                            <i class="fas fa-download"></i> Export Report
+                        </button>
+                    </div>
+                    <div class="expense-reports-content">
+                        <div class="report-summary">
+                            <div class="report-card">
+                                <h4>Total Expenses</h4>
+                                <p class="report-value" id="report-total-expenses">₹0</p>
+                            </div>
+                            <div class="report-card">
+                                <h4>Average Monthly</h4>
+                                <p class="report-value" id="average-monthly-expense">₹0</p>
+                            </div>
+                            <div class="report-card">
+                                <h4>Top Category</h4>
+                                <p class="report-value" id="top-expense-category">-</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -279,56 +580,176 @@
             <section id="contributions" class="section">
                 <div class="section-header">
                     <h2>Individual & External Contributions</h2>
-                    <button class="btn btn-primary" id="add-contribution-btn">
-                        <i class="fas fa-plus"></i> Add Contribution
-                    </button>
-                </div>
-
-                <div class="contribution-summary">
-                    <div class="contribution-card">
-                        <h3>Total Contributions</h3>
-                        <p id="total-contributions">₹0</p>
-                    </div>
-                    <div class="contribution-card">
-                        <h3>Member Contributions</h3>
-                        <p id="member-contributions">₹0</p>
-                    </div>
-                    <div class="contribution-card">
-                        <h3>External Contributions</h3>
-                        <p id="external-contributions">₹0</p>
+                    <div class="contribution-subsection-nav">
+                        <button class="subsection-btn active" data-subsection="add">
+                            <i class="fas fa-plus"></i> Add Contribution
+                        </button>
+                        <button class="subsection-btn" data-subsection="manage">
+                            <i class="fas fa-list"></i> Manage Contributions
+                        </button>
+                        <button class="subsection-btn" data-subsection="types">
+                            <i class="fas fa-category"></i> Types
+                        </button>
+                        <button class="subsection-btn" data-subsection="reports">
+                            <i class="fas fa-chart-pie"></i> Reports
+                        </button>
                     </div>
                 </div>
 
-                <div class="contribution-filters">
-                    <input type="text" id="contribution-search" placeholder="Search contributions..." class="search-input">
-                    <select id="contribution-type-filter" class="filter-select">
-                        <option value="">All Types</option>
-                        <option value="Member">Member Contribution</option>
-                        <option value="External">External Contribution</option>
-                        <option value="Donation">Donation</option>
-                        <option value="Sponsorship">Sponsorship</option>
-                    </select>
+                <!-- Add Contribution Subsection -->
+                <div id="contribution-add" class="contribution-subsection active">
+                    <div class="subsection-header">
+                        <h3>Add Contribution</h3>
+                        <button class="btn btn-primary" id="add-contribution-btn">
+                            <i class="fas fa-plus"></i> Create New Contribution
+                        </button>
+                    </div>
+                    <div class="contribution-add-content">
+                        <p>Record new contributions from members, external donors, or sponsors.</p>
+                        <!-- Contribution form will be populated by JavaScript -->
+                    </div>
                 </div>
 
-                <div class="table-container">
-                    <div class="mobile-scroll-hint">← Scroll horizontally to see all columns →</div>
-                    <table class="contributions-table">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Contributor Name</th>
-                                <th>Villa/Location</th>
-                                <th>Type</th>
-                                <th>Purpose</th>
-                                <th>Amount</th>
-                                <th>Receipt</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="contributions-table-body">
-                            <!-- Contributions will be populated by JavaScript -->
-                        </tbody>
-                    </table>
+                <!-- Manage Contributions Subsection -->
+                <div id="contribution-manage" class="contribution-subsection">
+                    <div class="subsection-header">
+                        <h3>Manage Contributions</h3>
+                        <div class="contribution-summary">
+                            <div class="contribution-card">
+                                <h4>Total Contributions</h4>
+                                <p id="total-contributions">₹0</p>
+                            </div>
+                            <div class="contribution-card">
+                                <h4>Member Contributions</h4>
+                                <p id="member-contributions">₹0</p>
+                            </div>
+                            <div class="contribution-card">
+                                <h4>External Contributions</h4>
+                                <p id="external-contributions">₹0</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="contribution-filters">
+                        <input type="text" id="contribution-search" placeholder="Search contributions..." class="search-input">
+                        <select id="contribution-type-filter" class="filter-select">
+                            <option value="">All Types</option>
+                            <option value="Member">Member Contribution</option>
+                            <option value="External">External Contribution</option>
+                            <option value="Donation">Donation</option>
+                            <option value="Sponsorship">Sponsorship</option>
+                        </select>
+                    </div>
+
+                    <div class="table-container">
+                        <div class="mobile-scroll-hint">← Scroll horizontally to see all columns →</div>
+                        <table class="contributions-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Contributor Name</th>
+                                    <th>Villa/Location</th>
+                                    <th>Type</th>
+                                    <th>Purpose</th>
+                                    <th>Amount</th>
+                                    <th>Receipt</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="contributions-table-body">
+                                <!-- Contributions will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Contribution Types Subsection -->
+                <div id="contribution-types" class="contribution-subsection">
+                    <div class="subsection-header">
+                        <h3>Contribution Types</h3>
+                        <button class="btn btn-primary" id="manage-contribution-types-btn">
+                            <i class="fas fa-cog"></i> Manage Types
+                        </button>
+                    </div>
+                    <div class="contribution-types-content">
+                        <p>Manage different types of contributions for better categorization.</p>
+                        <!-- Contribution types management will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Contribution Reports Subsection -->
+                <div id="contribution-reports" class="contribution-subsection">
+                    <div class="subsection-header">
+                        <h3>Contribution Reports</h3>
+                        <button class="btn btn-success" id="export-contribution-report">
+                            <i class="fas fa-download"></i> Export Report
+                        </button>
+                    </div>
+                    <div class="contribution-reports-content">
+                        <div class="report-summary">
+                            <div class="report-card">
+                                <h4>Total Contributions</h4>
+                                <p class="report-value" id="report-total-contributions">₹0</p>
+                            </div>
+                            <div class="report-card">
+                                <h4>Top Contributor</h4>
+                                <p class="report-value" id="top-contributor">-</p>
+                            </div>
+                            <div class="report-card">
+                                <h4>Average Amount</h4>
+                                <p class="report-value" id="average-contribution">₹0</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Events Section -->
+            <section id="events" class="section">
+                <h2>Events & Notifications</h2>
+
+                <div class="events-header">
+                    <div class="events-actions">
+                        <button class="btn btn-primary" id="add-event-btn">
+                            <i class="fas fa-plus"></i> Add Event
+                        </button>
+                        <button class="btn btn-secondary" id="manage-notifications-btn">
+                            <i class="fas fa-bell"></i> Notification Settings
+                        </button>
+                    </div>
+                </div>
+
+                <div class="events-container">
+                    <div class="upcoming-events">
+                        <h3>Upcoming Events</h3>
+                        <div id="upcoming-events-list">
+                            <!-- Upcoming events will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <div class="all-events">
+                        <h3>All Events</h3>
+                        <div class="events-filters">
+                            <select id="event-type-filter">
+                                <option value="">All Types</option>
+                                <option value="tournament">Tournament</option>
+                                <option value="meeting">Meeting</option>
+                                <option value="fee_reminder">Fee Reminder</option>
+                                <option value="maintenance">Maintenance</option>
+                                <option value="orientation">Orientation</option>
+                                <option value="other">Other</option>
+                            </select>
+                            <select id="event-priority-filter">
+                                <option value="">All Priorities</option>
+                                <option value="high">High Priority</option>
+                                <option value="medium">Medium Priority</option>
+                                <option value="low">Low Priority</option>
+                            </select>
+                        </div>
+                        <div id="all-events-list">
+                            <!-- All events will be populated by JavaScript -->
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -662,6 +1083,69 @@
                 <div class="form-actions">
                     <button type="button" class="btn btn-secondary" id="cancel-edit-fee">Cancel</button>
                     <button type="submit" class="btn btn-primary">Update Fee</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Event Modal -->
+    <div id="event-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="event-modal-title">Add Event</h2>
+            <form id="event-form">
+                <div class="form-group">
+                    <label for="event-title">Event Title:</label>
+                    <input type="text" id="event-title" required placeholder="Enter event title">
+                </div>
+
+                <div class="form-group">
+                    <label for="event-description">Description:</label>
+                    <textarea id="event-description" rows="3" placeholder="Enter event description"></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="event-date">Date:</label>
+                        <input type="date" id="event-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="event-time">Time:</label>
+                        <input type="time" id="event-time" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="event-type">Type:</label>
+                        <select id="event-type" required>
+                            <option value="">Select Type</option>
+                            <option value="tournament">Tournament</option>
+                            <option value="meeting">Meeting</option>
+                            <option value="fee_reminder">Fee Reminder</option>
+                            <option value="maintenance">Maintenance</option>
+                            <option value="orientation">Orientation</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="event-priority">Priority:</label>
+                        <select id="event-priority" required>
+                            <option value="">Select Priority</option>
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save Event
+                    </button>
+                    <button type="button" class="btn btn-secondary" id="cancel-event">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
                 </div>
             </form>
         </div>

@@ -32,6 +32,9 @@ class TTClubManager {
             this.pendingFees = [...TTClubDatabase.pendingFees];
             this.feeYears = [...TTClubDatabase.feeYears];
             this.settings = {...TTClubDatabase.settings};
+            this.users = [...TTClubDatabase.users]; // User management
+            this.currentUser = TTClubDatabase.currentUser || null;
+            this.events = [...TTClubDatabase.events]; // Events and notifications
 
             console.log('Successfully loaded from db.js:', this.members.length, 'members');
         } else {
@@ -91,6 +94,11 @@ class TTClubManager {
 
     // Reset to original database state
     resetToOriginalData() {
+        if (!this.canResetData()) {
+            this.showMessage('Access denied. Only super admin (varun) can reset data.', 'error');
+            return;
+        }
+
         if (confirm('This will reset all data to the original database state. Are you sure?')) {
             // Reload the page to get fresh data from db.js
             location.reload();
@@ -112,7 +120,15 @@ class TTClubManager {
                 this.showMessage('Error: No member data found. Please check db.js file.', 'error');
             }
 
+            // Initialize user authentication
+            this.initializeAuth();
+
+            // Initialize notification system
+            this.initializeNotifications();
+
             this.setupNavigation();
+            this.setupNavigationDropdowns();
+            this.setupSubsectionNavigation();
             this.setupModals();
             this.setupEventListeners();
             this.setupMobileEnhancements();
@@ -304,8 +320,8 @@ class TTClubManager {
     }
 
     // Navigation method to switch between sections
-    showSection(targetSection) {
-        console.log('Showing section:', targetSection);
+    showSection(targetSection, subsection = null) {
+        console.log('Showing section:', targetSection, 'subsection:', subsection);
 
         const navButtons = document.querySelectorAll('.nav-btn');
         const sections = document.querySelectorAll('.section');
@@ -328,6 +344,13 @@ class TTClubManager {
 
         // Update content based on section
         this.updateSectionContent(targetSection);
+
+        // Handle subsection if provided
+        if (subsection) {
+            setTimeout(() => {
+                this.showSubsection(targetSection, subsection);
+            }, 100);
+        }
     }
 
     handleCloseButtonClick(button) {
@@ -786,7 +809,660 @@ class TTClubManager {
         console.log('Mobile navigation and close button support added');
     }
 
+    // User Authentication and Role Management
+    initializeAuth() {
+        console.log('Initializing authentication system...');
 
+        // Check if user is already logged in (from localStorage)
+        const savedUser = localStorage.getItem('ttclub_current_user');
+        if (savedUser) {
+            try {
+                this.currentUser = JSON.parse(savedUser);
+                console.log('User logged in:', this.currentUser.username);
+            } catch (error) {
+                console.error('Error parsing saved user:', error);
+                localStorage.removeItem('ttclub_current_user');
+            }
+        }
+
+        // If no user is logged in, show login modal
+        if (!this.currentUser) {
+            this.showLoginModal();
+        } else {
+            this.updateUIForCurrentUser();
+        }
+    }
+
+    showLoginModal() {
+        // Create login modal if it doesn't exist
+        if (!document.getElementById('login-modal')) {
+            this.createLoginModal();
+        }
+
+        document.getElementById('login-modal').style.display = 'block';
+        document.body.style.overflow = 'hidden'; // Prevent background scrolling
+    }
+
+    createLoginModal() {
+        const modalHTML = `
+            <div id="login-modal" class="modal" style="z-index: 10000;">
+                <div class="modal-content" style="max-width: 400px; margin: 10% auto;">
+                    <h2 style="text-align: center; margin-bottom: 2rem; color: #2c3e50;">
+                        <i class="fas fa-table-tennis" style="color: #e74c3c;"></i>
+                        TT Club Login
+                    </h2>
+                    <form id="login-form">
+                        <div class="form-group">
+                            <label for="login-username">Username:</label>
+                            <input type="text" id="login-username" required
+                                   placeholder="Enter your username" autocomplete="username">
+                        </div>
+                        <div class="form-group">
+                            <label for="login-password">Password:</label>
+                            <input type="password" id="login-password" required
+                                   placeholder="Enter your password" autocomplete="current-password">
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-sign-in-alt"></i> Login
+                            </button>
+                        </div>
+                    </form>
+                    <div id="login-error" style="color: #e74c3c; text-align: center; margin-top: 1rem; display: none;"></div>
+                    <div style="text-align: center; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #eee; color: #7f8c8d; font-size: 0.9em;">
+                        <p><strong>Available Users:</strong></p>
+                        <p><strong>Super Admin (All Privileges + Reset Data):</strong><br>
+                        varun</p>
+                        <p><strong>Admin Users (Edit/Delete/Collect Fees + Reports):</strong><br>
+                        praveen | binu</p>
+                        <p><strong>Regular Users (View Only):</strong><br>
+                        joseph | benny | jaimon | zachariah | renith<br>
+                        ajith | jacob | matthews | jaison | anson | alex | john</p>
+                        <p><em>Use username as password for demo</em></p>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+        // Setup login form handler
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.handleLogin();
+        });
+    }
+
+    handleLogin() {
+        const username = document.getElementById('login-username').value.trim();
+        const password = document.getElementById('login-password').value.trim();
+
+        // Find user
+        const user = this.users.find(u => u.username.toLowerCase() === username.toLowerCase());
+
+        if (!user) {
+            this.showLoginError('User not found');
+            return;
+        }
+
+        if (!user.isActive) {
+            this.showLoginError('User account is disabled');
+            return;
+        }
+
+        // For demo purposes, use username as password
+        if (password !== username) {
+            this.showLoginError('Invalid password');
+            return;
+        }
+
+        // Login successful
+        this.currentUser = user;
+        this.currentUser.lastLogin = new Date().toISOString();
+
+        // Save to localStorage
+        localStorage.setItem('ttclub_current_user', JSON.stringify(this.currentUser));
+
+        // Hide login modal
+        document.getElementById('login-modal').style.display = 'none';
+        document.body.style.overflow = '';
+
+        // Update UI
+        this.updateUIForCurrentUser();
+
+        this.showMessage(`Welcome back, ${user.name}!`, 'success');
+        this.addActivity('User Login', `${user.name} logged in`);
+    }
+
+    showLoginError(message) {
+        const errorDiv = document.getElementById('login-error');
+        errorDiv.textContent = message;
+        errorDiv.style.display = 'block';
+
+        setTimeout(() => {
+            errorDiv.style.display = 'none';
+        }, 5000);
+    }
+
+    updateUIForCurrentUser() {
+        if (!this.currentUser) return;
+
+        console.log('Updating UI for user:', this.currentUser.username, 'Role:', this.currentUser.role);
+
+        // Add user info to header
+        this.addUserInfoToHeader();
+
+        // Update UI based on role
+        this.updateUIBasedOnRole();
+    }
+
+    addUserInfoToHeader() {
+        const header = document.querySelector('.header');
+        if (!header) return;
+
+        // Remove existing user info
+        const existingUserInfo = header.querySelector('.user-info');
+        if (existingUserInfo) {
+            existingUserInfo.remove();
+        }
+
+        const userInfoHTML = `
+            <div class="user-info" style="display: flex; align-items: center; gap: 1rem; margin-left: auto;">
+                <div class="user-details" style="text-align: right; color: white;">
+                    <div style="font-weight: 600;">${this.currentUser.name}</div>
+                    <div style="font-size: 0.8em; opacity: 0.8;">${this.getRoleDisplayName()}</div>
+                </div>
+                <button class="btn btn-secondary btn-small" onclick="ttClub.logout()" title="Logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        `;
+
+        header.insertAdjacentHTML('beforeend', userInfoHTML);
+    }
+
+    getRoleDisplayName() {
+        switch (this.currentUser.role) {
+            case 'super_admin': return 'Super Admin';
+            case 'admin': return 'Admin';
+            case 'user': return 'User';
+            default: return 'Unknown';
+        }
+    }
+
+    updateUIBasedOnRole() {
+        // Hide/show buttons based on role permissions
+        const canEditDelete = this.canEditDelete();
+        const canCollectFee = this.canCollectFee();
+        const canDownloadReports = this.canDownloadReports();
+        const canResetData = this.canResetData();
+
+        // Update all buttons based on permissions
+        setTimeout(() => {
+            const editButtons = document.querySelectorAll('.btn-primary[onclick*="edit"], .btn-primary[onclick*="Edit"], .btn-edit-fee');
+            const deleteButtons = document.querySelectorAll('.btn-danger[onclick*="delete"], .btn-danger[onclick*="Delete"]');
+            const collectButtons = document.querySelectorAll('.btn-success[onclick*="openFeeModal"], .btn-success[onclick*="Collect"]');
+            const reportButtons = document.querySelectorAll('#export-members, #export-financial, #backup-data, #download-json, #export-json');
+            const resetButtons = document.querySelectorAll('#reset-data');
+
+            editButtons.forEach(btn => {
+                if (canEditDelete) {
+                    btn.style.display = '';
+                } else {
+                    btn.style.display = 'none';
+                }
+            });
+
+            deleteButtons.forEach(btn => {
+                if (canEditDelete) {
+                    btn.style.display = '';
+                } else {
+                    btn.style.display = 'none';
+                }
+            });
+
+            // Hide/show collect fee buttons
+            collectButtons.forEach(btn => {
+                if (canCollectFee) {
+                    btn.style.display = '';
+                } else {
+                    btn.style.display = 'none';
+                }
+            });
+
+            // Hide/show report download buttons
+            reportButtons.forEach(btn => {
+                if (canDownloadReports) {
+                    btn.style.display = '';
+                } else {
+                    btn.style.display = 'none';
+                }
+            });
+
+            // Hide/show reset data buttons (only super admin)
+            resetButtons.forEach(btn => {
+                if (canResetData) {
+                    btn.style.display = '';
+                } else {
+                    btn.style.display = 'none';
+                }
+            });
+
+            console.log(`Updated ${editButtons.length} edit, ${deleteButtons.length} delete, ${collectButtons.length} collect, ${reportButtons.length} report, and ${resetButtons.length} reset buttons for user: ${this.currentUser.username}`);
+        }, 100);
+    }
+
+    isAdmin() {
+        return this.currentUser && (this.currentUser.role === 'admin' || this.currentUser.role === 'super_admin');
+    }
+
+    isSuperAdmin() {
+        return this.currentUser && this.currentUser.role === 'super_admin';
+    }
+
+    canEditDelete() {
+        // Only admin and super admin users can edit/delete
+        return this.currentUser && (this.currentUser.role === 'admin' || this.currentUser.role === 'super_admin');
+    }
+
+    canCollectFee() {
+        // Only admin and super admin users can collect fees
+        return this.currentUser && (this.currentUser.role === 'admin' || this.currentUser.role === 'super_admin');
+    }
+
+    canDownloadReports() {
+        // Only varun, praveen, and binu can download reports
+        return this.currentUser && ['varun', 'praveen', 'binu'].includes(this.currentUser.username);
+    }
+
+    canResetData() {
+        // Only super admin (varun) can reset/clear data
+        return this.currentUser && this.currentUser.role === 'super_admin';
+    }
+
+    logout() {
+        if (confirm('Are you sure you want to logout?')) {
+            this.currentUser = null;
+            localStorage.removeItem('ttclub_current_user');
+
+            // Remove user info from header
+            const userInfo = document.querySelector('.user-info');
+            if (userInfo) {
+                userInfo.remove();
+            }
+
+            // Show login modal
+            this.showLoginModal();
+
+            this.showMessage('Logged out successfully', 'info');
+        }
+    }
+
+    // Notification System
+    initializeNotifications() {
+        console.log('Initializing notification system...');
+
+        // Update notification icon and badge
+        this.updateNotificationIcon();
+
+        // Set up periodic checks (every 5 minutes)
+        setInterval(() => {
+            this.updateNotificationIcon();
+        }, 5 * 60 * 1000);
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            const dropdown = document.getElementById('notification-dropdown');
+            const container = document.querySelector('.notification-icon-container');
+
+            if (dropdown && container && !container.contains(e.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
+    }
+
+    updateNotificationIcon() {
+        const upcomingEvents = this.getUpcomingEvents(7); // Next 7 days
+        const badge = document.getElementById('notification-badge');
+        const bell = document.querySelector('.notification-bell');
+
+        if (upcomingEvents.length > 0) {
+            badge.textContent = upcomingEvents.length;
+            badge.style.display = 'flex';
+            bell.classList.add('has-notifications');
+        } else {
+            badge.style.display = 'none';
+            bell.classList.remove('has-notifications');
+        }
+
+        console.log(`Updated notification icon: ${upcomingEvents.length} upcoming events`);
+    }
+
+    getUpcomingEvents(days = 7) {
+        const now = new Date();
+        const futureDate = new Date();
+        futureDate.setDate(now.getDate() + days);
+
+        return this.events
+            .filter(event => {
+                if (!event.isActive) return false;
+                const eventDate = new Date(event.date + 'T' + event.time);
+                return eventDate >= now && eventDate <= futureDate;
+            })
+            .sort((a, b) => {
+                const dateA = new Date(a.date + 'T' + a.time);
+                const dateB = new Date(b.date + 'T' + b.time);
+                return dateA - dateB;
+            });
+    }
+
+    toggleNotificationDropdown() {
+        const dropdown = document.getElementById('notification-dropdown');
+        const isVisible = dropdown.style.display === 'block';
+
+        if (isVisible) {
+            dropdown.style.display = 'none';
+        } else {
+            this.populateNotificationDropdown();
+            dropdown.style.display = 'block';
+        }
+    }
+
+    closeNotificationDropdown() {
+        const dropdown = document.getElementById('notification-dropdown');
+        dropdown.style.display = 'none';
+    }
+
+    populateNotificationDropdown() {
+        const upcomingEvents = this.getUpcomingEvents(7); // Next 7 days
+        const content = document.getElementById('notification-dropdown-content');
+
+        if (upcomingEvents.length === 0) {
+            content.innerHTML = '<div class="no-notifications">No upcoming events in the next 7 days</div>';
+            return;
+        }
+
+        content.innerHTML = upcomingEvents.map(event => {
+            const eventDate = new Date(event.date + 'T' + event.time);
+            const timeUntil = this.getTimeUntilEvent(eventDate);
+
+            return `
+                <div class="notification-item priority-${event.priority}" onclick="ttClub.viewEventDetails(${event.id})">
+                    <div class="notification-item-title">${event.title}</div>
+                    <div class="notification-item-description">${event.description}</div>
+                    <div class="notification-item-time">${timeUntil}</div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    viewEventDetails(eventId) {
+        // Close dropdown and navigate to events section
+        this.closeNotificationDropdown();
+        this.showSection('events');
+
+        // Highlight the specific event (optional enhancement)
+        setTimeout(() => {
+            const eventElement = document.querySelector(`[data-event-id="${eventId}"]`);
+            if (eventElement) {
+                eventElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                eventElement.style.background = '#e3f2fd';
+                setTimeout(() => {
+                    eventElement.style.background = '';
+                }, 3000);
+            }
+        }, 500);
+    }
+
+    getTimeUntilEvent(eventDate) {
+        const now = new Date();
+        const timeDiff = eventDate - now;
+
+        if (timeDiff < 0) return 'Event has passed';
+
+        const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+
+        if (days > 0) {
+            return `In ${days} day${days > 1 ? 's' : ''}`;
+        } else if (hours > 0) {
+            return `In ${hours} hour${hours > 1 ? 's' : ''}`;
+        } else if (minutes > 0) {
+            return `In ${minutes} minute${minutes > 1 ? 's' : ''}`;
+        } else {
+            return 'Starting soon!';
+        }
+    }
+
+    viewAllEvents() {
+        // Close dropdown and navigate to events section
+        this.closeNotificationDropdown();
+        this.showSection('events');
+    }
+
+    // Events Management
+    renderEvents() {
+        console.log('Rendering events...');
+
+        this.renderUpcomingEvents();
+        this.renderAllEvents();
+        this.setupEventFilters();
+    }
+
+    renderUpcomingEvents() {
+        const upcomingEvents = this.getUpcomingEvents(30); // Next 30 days
+        const container = document.getElementById('upcoming-events-list');
+
+        if (upcomingEvents.length === 0) {
+            container.innerHTML = '<p class="no-events">No upcoming events in the next 30 days.</p>';
+            return;
+        }
+
+        container.innerHTML = upcomingEvents.map(event => this.createEventHTML(event, true)).join('');
+    }
+
+    renderAllEvents() {
+        const container = document.getElementById('all-events-list');
+        const typeFilter = document.getElementById('event-type-filter')?.value || '';
+        const priorityFilter = document.getElementById('event-priority-filter')?.value || '';
+
+        let filteredEvents = this.events.filter(event => event.isActive);
+
+        if (typeFilter) {
+            filteredEvents = filteredEvents.filter(event => event.type === typeFilter);
+        }
+
+        if (priorityFilter) {
+            filteredEvents = filteredEvents.filter(event => event.priority === priorityFilter);
+        }
+
+        // Sort by date (newest first)
+        filteredEvents.sort((a, b) => {
+            const dateA = new Date(a.date + 'T' + a.time);
+            const dateB = new Date(b.date + 'T' + b.time);
+            return dateB - dateA;
+        });
+
+        if (filteredEvents.length === 0) {
+            container.innerHTML = '<p class="no-events">No events found matching the selected filters.</p>';
+            return;
+        }
+
+        container.innerHTML = filteredEvents.map(event => this.createEventHTML(event, false)).join('');
+    }
+
+    createEventHTML(event, isUpcoming = false) {
+        const eventDate = new Date(event.date + 'T' + event.time);
+        const formattedDate = eventDate.toLocaleDateString('en-US', {
+            weekday: 'short',
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+        const formattedTime = eventDate.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        const canEdit = this.canEditDelete();
+        const timeUntil = isUpcoming ? this.getTimeUntilEvent(eventDate) : '';
+
+        return `
+            <div class="event-item priority-${event.priority}" data-event-id="${event.id}">
+                <div class="event-header">
+                    <div class="event-title">${event.title}</div>
+                    <div class="event-type ${event.type}">${event.type.replace('_', ' ')}</div>
+                </div>
+                <div class="event-description">${event.description}</div>
+                <div class="event-datetime">
+                    <div><i class="fas fa-calendar"></i> ${formattedDate}</div>
+                    <div><i class="fas fa-clock"></i> ${formattedTime}</div>
+                    ${isUpcoming ? `<div><i class="fas fa-hourglass-half"></i> ${timeUntil}</div>` : ''}
+                </div>
+                ${canEdit ? `
+                    <div class="event-actions">
+                        <button class="btn btn-primary btn-small" onclick="ttClub.editEvent(${event.id})">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button class="btn btn-danger btn-small" onclick="ttClub.deleteEvent(${event.id})">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    }
+
+    setupEventFilters() {
+        const typeFilter = document.getElementById('event-type-filter');
+        const priorityFilter = document.getElementById('event-priority-filter');
+
+        if (typeFilter) {
+            typeFilter.addEventListener('change', () => this.renderAllEvents());
+        }
+
+        if (priorityFilter) {
+            priorityFilter.addEventListener('change', () => this.renderAllEvents());
+        }
+    }
+
+    openEventModal(eventId = null) {
+        if (!this.canEditDelete()) {
+            this.showMessage('Access denied. Only admin and super admin users can manage events.', 'error');
+            return;
+        }
+
+        const modal = document.getElementById('event-modal');
+        const title = document.getElementById('event-modal-title');
+        const form = document.getElementById('event-form');
+
+        if (eventId) {
+            const event = this.events.find(e => e.id === eventId);
+            if (!event) {
+                this.showMessage('Event not found!', 'error');
+                return;
+            }
+
+            title.textContent = 'Edit Event';
+            document.getElementById('event-title').value = event.title;
+            document.getElementById('event-description').value = event.description;
+            document.getElementById('event-date').value = event.date;
+            document.getElementById('event-time').value = event.time;
+            document.getElementById('event-type').value = event.type;
+            document.getElementById('event-priority').value = event.priority;
+
+            form.setAttribute('data-event-id', eventId);
+        } else {
+            title.textContent = 'Add Event';
+            form.reset();
+            form.removeAttribute('data-event-id');
+
+            // Set default date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('event-date').value = today;
+        }
+
+        modal.style.display = 'block';
+    }
+
+    saveEvent() {
+        if (!this.canEditDelete()) {
+            this.showMessage('Access denied. Only admin and super admin users can manage events.', 'error');
+            return;
+        }
+
+        const form = document.getElementById('event-form');
+        const eventId = form.getAttribute('data-event-id');
+
+        const eventData = {
+            title: document.getElementById('event-title').value.trim(),
+            description: document.getElementById('event-description').value.trim(),
+            date: document.getElementById('event-date').value,
+            time: document.getElementById('event-time').value,
+            type: document.getElementById('event-type').value,
+            priority: document.getElementById('event-priority').value,
+            isActive: true,
+            createdBy: this.currentUser.username
+        };
+
+        if (!eventData.title || !eventData.date || !eventData.time || !eventData.type || !eventData.priority) {
+            this.showMessage('Please fill in all required fields.', 'error');
+            return;
+        }
+
+        if (eventId) {
+            // Update existing event
+            const eventIndex = this.events.findIndex(e => e.id === parseInt(eventId));
+            if (eventIndex !== -1) {
+                this.events[eventIndex] = { ...this.events[eventIndex], ...eventData };
+                this.addActivity('Event Updated', `Updated event: ${eventData.title}`);
+                this.showMessage('Event updated successfully!', 'success');
+            }
+        } else {
+            // Add new event
+            const newEvent = {
+                id: Math.max(...this.events.map(e => e.id), 0) + 1,
+                ...eventData,
+                createdDate: new Date().toISOString().split('T')[0]
+            };
+
+            this.events.push(newEvent);
+            this.addActivity('Event Created', `Created new event: ${eventData.title}`);
+            this.showMessage('Event created successfully!', 'success');
+        }
+
+        this.markDataChanged();
+        this.saveAllData();
+        this.renderEvents();
+        document.getElementById('event-modal').style.display = 'none';
+    }
+
+    editEvent(eventId) {
+        this.openEventModal(eventId);
+    }
+
+    deleteEvent(eventId) {
+        if (!this.canEditDelete()) {
+            this.showMessage('Access denied. Only admin and super admin users can manage events.', 'error');
+            return;
+        }
+
+        const event = this.events.find(e => e.id === eventId);
+        if (!event) {
+            this.showMessage('Event not found!', 'error');
+            return;
+        }
+
+        if (confirm(`Are you sure you want to delete the event "${event.title}"?`)) {
+            this.events = this.events.filter(e => e.id !== eventId);
+            this.markDataChanged();
+            this.saveAllData();
+            this.renderEvents();
+            this.addActivity('Event Deleted', `Deleted event: ${event.title}`);
+            this.showMessage('Event deleted successfully!', 'success');
+        }
+    }
 
     fixMobileModals() {
         console.log('Fixing mobile modals...');
@@ -1091,6 +1767,550 @@ class TTClubManager {
         });
     }
 
+    // Navigation Dropdown Setup
+    setupNavigationDropdowns() {
+        console.log('Setting up navigation dropdowns...');
+
+        const navDropdowns = document.querySelectorAll('.nav-dropdown');
+
+        navDropdowns.forEach(dropdown => {
+            const toggleBtn = dropdown.querySelector('.dropdown-toggle');
+            const menu = dropdown.querySelector('.nav-dropdown-menu');
+            const items = dropdown.querySelectorAll('.nav-dropdown-item');
+
+            // Toggle dropdown on click
+            toggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+
+                // Close other dropdowns
+                navDropdowns.forEach(otherDropdown => {
+                    if (otherDropdown !== dropdown) {
+                        otherDropdown.classList.remove('active');
+                    }
+                });
+
+                // Toggle current dropdown
+                dropdown.classList.toggle('active');
+            });
+
+            // Handle dropdown item clicks
+            items.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.stopPropagation();
+
+                    const section = item.getAttribute('data-section');
+                    const subsection = item.getAttribute('data-subsection');
+
+                    // Close dropdown
+                    dropdown.classList.remove('active');
+
+                    // Show section and subsection
+                    this.showSection(section, subsection);
+
+                    // Update active states
+                    items.forEach(i => i.classList.remove('active'));
+                    item.classList.add('active');
+                });
+            });
+        });
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', () => {
+            navDropdowns.forEach(dropdown => {
+                dropdown.classList.remove('active');
+            });
+        });
+    }
+
+    // Subsection Navigation Setup
+    setupSubsectionNavigation() {
+        console.log('Setting up subsection navigation...');
+
+        const subsectionBtns = document.querySelectorAll('.subsection-btn');
+
+        subsectionBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const subsection = btn.getAttribute('data-subsection');
+                this.showFeeSubsection(subsection);
+
+                // Update active states
+                subsectionBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+    }
+
+    showSubsection(section, subsection) {
+        console.log('Showing subsection:', section, subsection);
+
+        // Hide all subsections for the current section
+        const subsections = document.querySelectorAll(`.${section}-subsection`);
+        subsections.forEach(sub => {
+            sub.classList.remove('active');
+        });
+
+        // Show selected subsection
+        const targetSubsection = document.getElementById(`${section}-${subsection}`);
+        if (targetSubsection) {
+            targetSubsection.classList.add('active');
+        }
+
+        // Update content based on section and subsection
+        this.updateSubsectionContent(section, subsection);
+    }
+
+    showFeeSubsection(subsection) {
+        this.showSubsection('fee', subsection);
+    }
+
+    updateSubsectionContent(section, subsection) {
+        console.log('Updating subsection content:', section, subsection);
+        switch(section) {
+            case 'fee':
+                this.updateFeeSubsectionContent(subsection);
+                break;
+            case 'invoice':
+                this.updateInvoiceSubsectionContent(subsection);
+                break;
+            case 'expense':
+                this.updateExpenseSubsectionContent(subsection);
+                break;
+            case 'contribution':
+                this.updateContributionSubsectionContent(subsection);
+                break;
+        }
+    }
+
+    updateFeeSubsectionContent(subsection) {
+        switch(subsection) {
+            case 'collection':
+                this.updateFeeManagement();
+                break;
+            case 'pending':
+                this.renderPendingFees();
+                break;
+            case 'years':
+                this.updateFeeYearsContent();
+                break;
+            case 'reports':
+                this.updateFeeReports();
+                break;
+        }
+    }
+
+    updateInvoiceSubsectionContent(subsection) {
+        switch(subsection) {
+            case 'generate':
+                console.log('Updating invoice generation content');
+                break;
+            case 'manage':
+                this.renderInvoices();
+                break;
+            case 'templates':
+                console.log('Updating invoice templates content');
+                break;
+            case 'reports':
+                this.updateInvoiceReports();
+                break;
+        }
+    }
+
+    updateExpenseSubsectionContent(subsection) {
+        switch(subsection) {
+            case 'add':
+                console.log('Updating expense add content');
+                break;
+            case 'manage':
+                this.renderExpenses();
+                break;
+            case 'categories':
+                this.updateExpenseCategoriesContent();
+                break;
+            case 'reports':
+                this.updateExpenseReports();
+                break;
+        }
+    }
+
+    updateContributionSubsectionContent(subsection) {
+        switch(subsection) {
+            case 'add':
+                console.log('Updating contribution add content');
+                break;
+            case 'manage':
+                this.renderContributions();
+                break;
+            case 'types':
+                this.updateContributionTypesContent();
+                break;
+            case 'reports':
+                this.updateContributionReports();
+                break;
+        }
+    }
+
+    updateExpenseCategoriesContent() {
+        const categoriesContent = document.querySelector('#expense-categories .categories-content');
+        if (categoriesContent) {
+            const categories = ['Equipment', 'Maintenance', 'Events', 'Utilities', 'Other'];
+            const categoryStats = {};
+
+            // Calculate category statistics
+            categories.forEach(cat => {
+                categoryStats[cat] = {
+                    count: this.expenses.filter(e => e.category === cat).length,
+                    total: this.expenses.filter(e => e.category === cat).reduce((sum, e) => sum + e.amount, 0)
+                };
+            });
+
+            categoriesContent.innerHTML = `
+                <div class="categories-list">
+                    <h4>Current Categories & Usage:</h4>
+                    ${categories.map(category => `
+                        <div class="category-item">
+                            <div class="category-info">
+                                <span class="category-name">${category}</span>
+                                <span class="category-stats">${categoryStats[category].count} expenses • ₹${categoryStats[category].total.toLocaleString()}</span>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="categories-note">
+                    <p><i class="fas fa-info-circle"></i> Categories are currently predefined. Click "Manage Categories" to customize them.</p>
+                </div>
+            `;
+        }
+    }
+
+    updateContributionTypesContent() {
+        const typesContent = document.querySelector('#contribution-types .contribution-types-content');
+        if (typesContent) {
+            const types = ['Member', 'External', 'Donation', 'Sponsorship'];
+            const typeStats = {};
+
+            // Calculate type statistics
+            types.forEach(type => {
+                typeStats[type] = {
+                    count: this.contributions.filter(c => c.type === type).length,
+                    total: this.contributions.filter(c => c.type === type).reduce((sum, c) => sum + c.amount, 0)
+                };
+            });
+
+            typesContent.innerHTML = `
+                <div class="types-list">
+                    <h4>Current Types & Usage:</h4>
+                    ${types.map(type => `
+                        <div class="type-item">
+                            <div class="type-info">
+                                <span class="type-name">${type} Contribution</span>
+                                <span class="type-stats">${typeStats[type].count} contributions • ₹${typeStats[type].total.toLocaleString()}</span>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="types-note">
+                    <p><i class="fas fa-info-circle"></i> Types are currently predefined. Click "Manage Types" to customize them.</p>
+                </div>
+            `;
+        }
+    }
+
+    updateFeeReports() {
+        console.log('Updating fee reports...');
+
+        // Calculate totals
+        const totalCollected = this.members.reduce((sum, member) => sum + member.totalPaid, 0);
+        const totalPending = this.calculatePendingPayments();
+        const collectionRate = totalCollected + totalPending > 0 ?
+            Math.round((totalCollected / (totalCollected + totalPending)) * 100) : 0;
+
+        // Update report values
+        document.getElementById('total-collections').textContent = `₹${totalCollected.toLocaleString()}`;
+        document.getElementById('total-pending').textContent = `₹${totalPending.toLocaleString()}`;
+        document.getElementById('collection-rate').textContent = `${collectionRate}%`;
+    }
+
+    updateFeeYearsContent() {
+        console.log('Updating fee years content...');
+        // This can be expanded to show fee year management interface
+    }
+
+    exportFeeReport() {
+        if (!this.canDownloadReports()) {
+            this.showMessage('Access denied. Only authorized users can download reports.', 'error');
+            return;
+        }
+
+        console.log('Exporting fee report...');
+
+        // Prepare fee report data
+        const reportData = [];
+
+        // Add header
+        reportData.push(['Member Name', 'Member Type', '2023 Fee', '2024 Fee', '2025 Fee', 'Total Paid', 'Total Pending']);
+
+        // Add member data
+        this.members.forEach(member => {
+            const fee2023 = member.fees?.find(f => f.year === 2023)?.amount || 0;
+            const fee2024 = member.fees?.find(f => f.year === 2024)?.amount || 0;
+            const fee2025 = member.fees?.find(f => f.year === 2025)?.amount || 0;
+            const totalExpected = fee2023 + fee2024 + fee2025;
+            const totalPending = totalExpected - member.totalPaid;
+
+            reportData.push([
+                member.name,
+                member.isFounder ? 'Founder' : 'Regular',
+                fee2023,
+                fee2024,
+                fee2025,
+                member.totalPaid,
+                totalPending
+            ]);
+        });
+
+        // Convert to CSV
+        const csvContent = reportData.map(row =>
+            row.map(cell => `"${cell}"`).join(',')
+        ).join('\n');
+
+        // Download CSV
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `fee_report_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        this.showMessage('Fee report exported successfully!', 'success');
+        this.addActivity('Report Export', 'Exported fee report');
+    }
+
+    updateInvoiceReports() {
+        console.log('Updating invoice reports...');
+        // Calculate invoice statistics
+        // This can be expanded with actual invoice data
+        document.getElementById('total-invoices').textContent = '0';
+        document.getElementById('total-invoice-amount').textContent = '₹0';
+        document.getElementById('paid-invoices').textContent = '0';
+    }
+
+    updateExpenseReports() {
+        console.log('Updating expense reports...');
+
+        const totalExpenses = this.expenses.reduce((sum, expense) => sum + expense.amount, 0);
+        const monthlyAverage = totalExpenses > 0 ? Math.round(totalExpenses / 12) : 0;
+
+        // Find top category
+        const categoryTotals = {};
+        this.expenses.forEach(expense => {
+            categoryTotals[expense.category] = (categoryTotals[expense.category] || 0) + expense.amount;
+        });
+
+        const topCategory = Object.keys(categoryTotals).reduce((a, b) =>
+            categoryTotals[a] > categoryTotals[b] ? a : b, 'None'
+        );
+
+        document.getElementById('report-total-expenses').textContent = `₹${totalExpenses.toLocaleString()}`;
+        document.getElementById('average-monthly-expense').textContent = `₹${monthlyAverage.toLocaleString()}`;
+        document.getElementById('top-expense-category').textContent = topCategory;
+    }
+
+    updateContributionReports() {
+        console.log('Updating contribution reports...');
+
+        const totalContributions = this.contributions.reduce((sum, contribution) => sum + contribution.amount, 0);
+        const averageContribution = this.contributions.length > 0 ?
+            Math.round(totalContributions / this.contributions.length) : 0;
+
+        // Find top contributor
+        const contributorTotals = {};
+        this.contributions.forEach(contribution => {
+            contributorTotals[contribution.contributorName] =
+                (contributorTotals[contribution.contributorName] || 0) + contribution.amount;
+        });
+
+        const topContributor = Object.keys(contributorTotals).reduce((a, b) =>
+            contributorTotals[a] > contributorTotals[b] ? a : b, 'None'
+        );
+
+        document.getElementById('report-total-contributions').textContent = `₹${totalContributions.toLocaleString()}`;
+        document.getElementById('average-contribution').textContent = `₹${averageContribution.toLocaleString()}`;
+        document.getElementById('top-contributor').textContent = topContributor;
+    }
+
+    exportInvoiceReport() {
+        if (!this.canDownloadReports()) {
+            this.showMessage('Access denied. Only authorized users can download reports.', 'error');
+            return;
+        }
+
+        console.log('Exporting invoice report...');
+        // This can be expanded with actual invoice data
+        this.showMessage('Invoice report export feature coming soon!', 'info');
+    }
+
+    exportExpenseReport() {
+        if (!this.canDownloadReports()) {
+            this.showMessage('Access denied. Only authorized users can download reports.', 'error');
+            return;
+        }
+
+        console.log('Exporting expense report...');
+
+        // Prepare expense report data
+        const reportData = [];
+        reportData.push(['Date', 'Description', 'Category', 'Amount', 'Paid By', 'Status', 'Receipt']);
+
+        this.expenses.forEach(expense => {
+            reportData.push([
+                expense.date,
+                expense.description,
+                expense.category,
+                expense.amount,
+                expense.paidBy,
+                expense.status,
+                expense.receipt || 'No'
+            ]);
+        });
+
+        // Convert to CSV and download
+        const csvContent = reportData.map(row =>
+            row.map(cell => `"${cell}"`).join(',')
+        ).join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `expense_report_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        this.showMessage('Expense report exported successfully!', 'success');
+        this.addActivity('Report Export', 'Exported expense report');
+    }
+
+    exportContributionReport() {
+        if (!this.canDownloadReports()) {
+            this.showMessage('Access denied. Only authorized users can download reports.', 'error');
+            return;
+        }
+
+        console.log('Exporting contribution report...');
+
+        // Prepare contribution report data
+        const reportData = [];
+        reportData.push(['Date', 'Contributor Name', 'Villa/Location', 'Type', 'Purpose', 'Amount', 'Receipt']);
+
+        this.contributions.forEach(contribution => {
+            reportData.push([
+                contribution.date,
+                contribution.contributorName,
+                contribution.villa || contribution.location || '-',
+                contribution.type,
+                contribution.purpose,
+                contribution.amount,
+                contribution.receipt || 'No'
+            ]);
+        });
+
+        // Convert to CSV and download
+        const csvContent = reportData.map(row =>
+            row.map(cell => `"${cell}"`).join(',')
+        ).join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `contribution_report_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        this.showMessage('Contribution report exported successfully!', 'success');
+        this.addActivity('Report Export', 'Exported contribution report');
+    }
+
+    // Category and Type Management
+    openCategoriesModal() {
+        this.showMessage('Expense Categories Management - Feature coming soon! Currently using predefined categories.', 'info');
+        console.log('Opening categories management modal');
+        // This can be expanded to show a modal for managing expense categories
+    }
+
+    openContributionTypesModal() {
+        this.showMessage('Contribution Types Management - Feature coming soon! Currently using predefined types.', 'info');
+        console.log('Opening contribution types management modal');
+        // This can be expanded to show a modal for managing contribution types
+    }
+
+    // Invoice Management Features
+    toggleInvoiceFilters() {
+        const filtersContainer = document.getElementById('invoice-filters-container');
+        if (filtersContainer) {
+            const isVisible = filtersContainer.style.display !== 'none';
+            filtersContainer.style.display = isVisible ? 'none' : 'block';
+        } else {
+            // Create filters if they don't exist
+            this.createInvoiceFilters();
+        }
+    }
+
+    createInvoiceFilters() {
+        const manageSection = document.getElementById('invoice-manage');
+        if (!manageSection) return;
+
+        const filtersHTML = `
+            <div id="invoice-filters-container" class="filters-container" style="margin-bottom: 1rem;">
+                <div class="filters-row">
+                    <input type="text" id="invoice-search" placeholder="Search invoices..." class="search-input">
+                    <select id="invoice-status-filter" class="filter-select">
+                        <option value="">All Status</option>
+                        <option value="Generated">Generated</option>
+                        <option value="Sent">Sent</option>
+                        <option value="Paid">Paid</option>
+                        <option value="Overdue">Overdue</option>
+                    </select>
+                    <select id="invoice-member-filter" class="filter-select">
+                        <option value="">All Members</option>
+                        ${this.members.map(member =>
+                            `<option value="${member.id}">${member.name}</option>`
+                        ).join('')}
+                    </select>
+                </div>
+            </div>
+        `;
+
+        const invoiceList = document.getElementById('invoice-list');
+        if (invoiceList) {
+            invoiceList.insertAdjacentHTML('beforebegin', filtersHTML);
+
+            // Add event listeners for filters
+            document.getElementById('invoice-search').addEventListener('input', () => this.filterInvoices());
+            document.getElementById('invoice-status-filter').addEventListener('change', () => this.filterInvoices());
+            document.getElementById('invoice-member-filter').addEventListener('change', () => this.filterInvoices());
+        }
+    }
+
+    filterInvoices() {
+        // This would filter the invoice list based on search and filter criteria
+        console.log('Filtering invoices...');
+        this.renderInvoices(); // For now, just re-render
+    }
+
+    openInvoiceTemplateModal() {
+        this.showMessage('Invoice Templates - Feature coming soon! Currently using default template.', 'info');
+        console.log('Opening invoice template modal');
+        // This can be expanded to show a modal for managing invoice templates
+    }
+
     // Update section content when switching
     updateSectionContent(section) {
         switch(section) {
@@ -1111,6 +2331,9 @@ class TTClubManager {
                 break;
             case 'contributions':
                 this.renderContributions();
+                break;
+            case 'events':
+                this.renderEvents();
                 break;
             case 'reports':
                 this.updateReports();
@@ -1309,6 +2532,55 @@ class TTClubManager {
 
         document.getElementById('cancel-edit-fee').addEventListener('click', () => {
             document.getElementById('edit-member-fee-modal').style.display = 'none';
+        });
+
+        // Events Management
+        document.getElementById('add-event-btn').addEventListener('click', () => {
+            this.openEventModal();
+        });
+
+        document.getElementById('event-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.saveEvent();
+        });
+
+        document.getElementById('cancel-event').addEventListener('click', () => {
+            document.getElementById('event-modal').style.display = 'none';
+        });
+
+        // Report Export Buttons
+        document.getElementById('export-fee-report').addEventListener('click', () => {
+            this.exportFeeReport();
+        });
+
+        document.getElementById('export-invoice-report').addEventListener('click', () => {
+            this.exportInvoiceReport();
+        });
+
+        document.getElementById('export-expense-report').addEventListener('click', () => {
+            this.exportExpenseReport();
+        });
+
+        document.getElementById('export-contribution-report').addEventListener('click', () => {
+            this.exportContributionReport();
+        });
+
+        // Category and Type Management Buttons
+        document.getElementById('manage-categories-btn').addEventListener('click', () => {
+            this.openCategoriesModal();
+        });
+
+        document.getElementById('manage-contribution-types-btn').addEventListener('click', () => {
+            this.openContributionTypesModal();
+        });
+
+        // Invoice Management Buttons
+        document.getElementById('filter-invoices').addEventListener('click', () => {
+            this.toggleInvoiceFilters();
+        });
+
+        document.getElementById('create-template-btn').addEventListener('click', () => {
+            this.openInvoiceTemplateModal();
         });
 
         // Dashboard stat card click events
@@ -1544,6 +2816,11 @@ class TTClubManager {
     }
 
     deleteMember(id) {
+        if (!this.canEditDelete()) {
+            this.showMessage('Access denied. Only varun, praveen, and binu can delete members.', 'error');
+            return;
+        }
+
         if (confirm('Are you sure you want to delete this member?')) {
             const member = this.members.find(m => m.id === id);
             this.members = this.members.filter(m => m.id !== id);
@@ -1634,6 +2911,8 @@ class TTClubManager {
         // Add touch support for dynamically created buttons (mobile)
         setTimeout(() => {
             this.addCollectFeeButtonTouchSupport();
+            // Update UI based on user role
+            this.updateUIBasedOnRole();
         }, 100);
     }
 
@@ -1792,6 +3071,11 @@ class TTClubManager {
 
     // Fee Management
     openFeeModal(memberId = null) {
+        if (!this.canCollectFee()) {
+            this.showMessage('Access denied. Only admin and super admin users can collect fees.', 'error');
+            return;
+        }
+
         const modal = document.getElementById('fee-modal');
         const memberSelect = document.getElementById('fee-member');
         const feeTypeSelect = document.getElementById('fee-type');
@@ -1823,6 +3107,11 @@ class TTClubManager {
     }
 
     collectFee() {
+        if (!this.canCollectFee()) {
+            this.showMessage('Access denied. Only admin and super admin users can collect fees.', 'error');
+            return;
+        }
+
         const memberId = parseInt(document.getElementById('fee-member').value);
         const feeType = document.getElementById('fee-type').value;
         const amount = parseInt(document.getElementById('fee-amount').value);
@@ -2089,6 +3378,11 @@ class TTClubManager {
     }
 
     quickCollectFee(memberId, feeType, amount) {
+        if (!this.canCollectFee()) {
+            this.showMessage('Access denied. Only admin and super admin users can collect fees.', 'error');
+            return;
+        }
+
         const member = this.members.find(m => m.id === memberId);
         if (!member) {
             console.error('Member not found:', memberId);
@@ -2384,12 +3678,22 @@ class TTClubManager {
 
     // Export Functions
     exportMembers() {
+        if (!this.canDownloadReports()) {
+            this.showMessage('Access denied. Only varun, praveen, and binu can download reports.', 'error');
+            return;
+        }
+
         const csvContent = this.generateMembersCSV();
         this.downloadCSV(csvContent, 'tt_club_members.csv');
         this.addActivity('Data Export', 'Exported members data to CSV');
     }
 
     exportFinancialData() {
+        if (!this.canDownloadReports()) {
+            this.showMessage('Access denied. Only varun, praveen, and binu can download reports.', 'error');
+            return;
+        }
+
         const csvContent = this.generateFinancialCSV();
         this.downloadCSV(csvContent, 'tt_club_financial.csv');
         this.addActivity('Data Export', 'Exported financial data to CSV');
@@ -2447,6 +3751,11 @@ class TTClubManager {
 
     // Backup and Download Functions
     backupDatabase() {
+        if (!this.canDownloadReports()) {
+            this.showMessage('Access denied. Only varun, praveen, and binu can download reports.', 'error');
+            return;
+        }
+
         // Create a backup by downloading the current database
         this.downloadDatabaseJSON();
         this.addActivity('Database Backup', 'Database backup downloaded');
@@ -2454,6 +3763,11 @@ class TTClubManager {
     }
 
     downloadDatabaseJSON() {
+        if (!this.canDownloadReports()) {
+            this.showMessage('Access denied. Only varun, praveen, and binu can download reports.', 'error');
+            return;
+        }
+
         const data = {
             members: this.members,
             transactions: this.transactions,
@@ -2676,6 +3990,11 @@ class TTClubManager {
 
     // Member Fee Editing Methods
     editMemberFee(memberId, year, currentAmount) {
+        if (!this.canEditDelete()) {
+            this.showMessage('Access denied. Only varun, praveen, and binu can edit member fees.', 'error');
+            return;
+        }
+
         const member = this.members.find(m => m.id === memberId);
         if (!member) {
             this.showMessage('Member not found!', 'error');
@@ -2822,6 +4141,12 @@ class TTClubManager {
         const status = document.getElementById('expense-status').value;
         const receipt = document.getElementById('expense-receipt').value;
 
+        // Validation
+        if (!date || !description || !category || !amount || !paidBy || !status) {
+            this.showMessage('Please fill in all required fields.', 'error');
+            return;
+        }
+
         if (this.currentEditingExpense) {
             // Edit existing expense
             const expense = this.expenses.find(e => e.id === this.currentEditingExpense.id);
@@ -2834,6 +4159,7 @@ class TTClubManager {
             expense.receipt = receipt;
 
             this.addActivity('Expense Updated', `Updated expense: ${description}`);
+            this.showMessage('Expense updated successfully!', 'success');
         } else {
             // Add new expense
             const newExpense = {
@@ -2850,6 +4176,7 @@ class TTClubManager {
 
             this.expenses.push(newExpense);
             this.addActivity('Expense Added', `Added new expense: ${description} - ₹${amount}`);
+            this.showMessage('Expense added successfully!', 'success');
         }
 
         this.markDataChanged();
@@ -2857,9 +4184,17 @@ class TTClubManager {
         this.renderExpenses();
         this.updateDashboard();
         document.getElementById('expense-modal').style.display = 'none';
+
+        // Navigate to manage expenses to show the new entry
+        this.showSubsection('expense', 'manage');
     }
 
     deleteExpense(id) {
+        if (!this.canEditDelete()) {
+            this.showMessage('Access denied. Only varun, praveen, and binu can delete expenses.', 'error');
+            return;
+        }
+
         if (confirm('Are you sure you want to delete this expense?')) {
             const expense = this.expenses.find(e => e.id === id);
             this.expenses = this.expenses.filter(e => e.id !== id);
@@ -2896,6 +4231,11 @@ class TTClubManager {
         `).join('');
 
         this.updateExpenseSummary();
+
+        // Update UI based on user role
+        setTimeout(() => {
+            this.updateUIBasedOnRole();
+        }, 50);
     }
 
     getFilteredExpenses() {
@@ -2948,7 +4288,7 @@ class TTClubManager {
             title.textContent = 'Edit Contribution';
             document.getElementById('contribution-date').value = contribution.date;
             document.getElementById('contribution-name').value = contribution.contributorName;
-            document.getElementById('contribution-location').value = contribution.location;
+            document.getElementById('contribution-location').value = contribution.villa || contribution.location || '';
             document.getElementById('contribution-type').value = contribution.type;
             document.getElementById('contribution-purpose').value = contribution.purpose;
             document.getElementById('contribution-amount').value = contribution.amount;
@@ -2965,31 +4305,38 @@ class TTClubManager {
     saveContribution() {
         const date = document.getElementById('contribution-date').value;
         const contributorName = document.getElementById('contribution-name').value;
-        const location = document.getElementById('contribution-location').value;
+        const villa = document.getElementById('contribution-location').value; // Changed to villa to match rendering
         const type = document.getElementById('contribution-type').value;
         const purpose = document.getElementById('contribution-purpose').value;
         const amount = parseFloat(document.getElementById('contribution-amount').value);
         const receipt = document.getElementById('contribution-receipt').value;
+
+        // Validation
+        if (!date || !contributorName || !villa || !type || !purpose || !amount) {
+            this.showMessage('Please fill in all required fields.', 'error');
+            return;
+        }
 
         if (this.currentEditingContribution) {
             // Edit existing contribution
             const contribution = this.contributions.find(c => c.id === this.currentEditingContribution.id);
             contribution.date = date;
             contribution.contributorName = contributorName;
-            contribution.location = location;
+            contribution.villa = villa; // Changed to villa
             contribution.type = type;
             contribution.purpose = purpose;
             contribution.amount = amount;
             contribution.receipt = receipt;
 
             this.addActivity('Contribution Updated', `Updated contribution from ${contributorName}`);
+            this.showMessage('Contribution updated successfully!', 'success');
         } else {
             // Add new contribution
             const newContribution = {
                 id: Date.now(),
                 date,
                 contributorName,
-                location,
+                villa, // Changed to villa
                 type,
                 purpose,
                 amount,
@@ -2999,6 +4346,7 @@ class TTClubManager {
 
             this.contributions.push(newContribution);
             this.addActivity('Contribution Added', `Added new contribution from ${contributorName} - ₹${amount}`);
+            this.showMessage('Contribution added successfully!', 'success');
         }
 
         this.markDataChanged();
@@ -3006,9 +4354,17 @@ class TTClubManager {
         this.renderContributions();
         this.updateDashboard();
         document.getElementById('contribution-modal').style.display = 'none';
+
+        // Navigate to manage contributions to show the new entry
+        this.showSubsection('contribution', 'manage');
     }
 
     deleteContribution(id) {
+        if (!this.canEditDelete()) {
+            this.showMessage('Access denied. Only varun, praveen, and binu can delete contributions.', 'error');
+            return;
+        }
+
         if (confirm('Are you sure you want to delete this contribution?')) {
             const contribution = this.contributions.find(c => c.id === id);
             this.contributions = this.contributions.filter(c => c.id !== id);
@@ -3022,29 +4378,51 @@ class TTClubManager {
 
     renderContributions() {
         const tbody = document.getElementById('contributions-table-body');
-        const filteredContributions = this.getFilteredContributions();
+        if (!tbody) {
+            console.error('Contributions table body not found');
+            return;
+        }
 
-        tbody.innerHTML = filteredContributions.map(contribution => `
-            <tr>
-                <td>${new Date(contribution.date).toLocaleDateString()}</td>
-                <td>${contribution.contributorName}</td>
-                <td>${contribution.location}</td>
-                <td><span class="status-badge type-${contribution.type.toLowerCase().replace(' ', '-')}">${contribution.type}</span></td>
-                <td>${contribution.purpose}</td>
-                <td>₹${contribution.amount.toLocaleString()}</td>
-                <td>${contribution.receipt ? '✓' : '-'}</td>
-                <td class="action-buttons">
-                    <button class="btn btn-small btn-primary" onclick="ttClub.openContributionModal(${JSON.stringify(contribution).replace(/"/g, '&quot;')})">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn btn-small btn-danger" onclick="ttClub.deleteContribution(${contribution.id})">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </td>
-            </tr>
-        `).join('');
+        const filteredContributions = this.getFilteredContributions();
+        console.log('Rendering contributions:', filteredContributions.length);
+
+        if (filteredContributions.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" style="text-align: center; padding: 2rem; color: #7f8c8d;">
+                        <i class="fas fa-hand-holding-usd" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
+                        No contributions found. Click "Add Contribution" to create the first entry.
+                    </td>
+                </tr>
+            `;
+        } else {
+            tbody.innerHTML = filteredContributions.map(contribution => `
+                <tr>
+                    <td>${new Date(contribution.date).toLocaleDateString()}</td>
+                    <td>${contribution.contributorName}</td>
+                    <td>${contribution.villa || contribution.location || '-'}</td>
+                    <td><span class="status-badge type-${contribution.type.toLowerCase().replace(' ', '-')}">${contribution.type}</span></td>
+                    <td>${contribution.purpose}</td>
+                    <td>₹${contribution.amount.toLocaleString()}</td>
+                    <td>${contribution.receipt ? '✓' : '-'}</td>
+                    <td class="action-buttons">
+                        <button class="btn btn-small btn-primary" onclick="ttClub.openContributionModal(${JSON.stringify(contribution).replace(/"/g, '&quot;')})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-small btn-danger" onclick="ttClub.deleteContribution(${contribution.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
 
         this.updateContributionSummary();
+
+        // Update UI based on user role
+        setTimeout(() => {
+            this.updateUIBasedOnRole();
+        }, 50);
     }
 
     getFilteredContributions() {
@@ -3052,8 +4430,9 @@ class TTClubManager {
         const typeFilter = document.getElementById('contribution-type-filter')?.value || '';
 
         return this.contributions.filter(contribution => {
+            const location = contribution.villa || contribution.location || '';
             const matchesSearch = contribution.contributorName.toLowerCase().includes(searchTerm) ||
-                                contribution.location.toLowerCase().includes(searchTerm) ||
+                                location.toLowerCase().includes(searchTerm) ||
                                 contribution.purpose.toLowerCase().includes(searchTerm);
             const matchesType = !typeFilter || contribution.type === typeFilter;
 
