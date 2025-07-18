@@ -2848,47 +2848,128 @@ button, .btn, .btn-small, .btn-success, .btn-primary, .btn-secondary, .btn-dange
     .header {
         padding: 0.75rem 1rem !important;
         flex-direction: column !important;
-        gap: 1rem !important;
-        align-items: stretch !important;
-    }
-
-    .header h1 {
-        font-size: 1.2rem !important;
+        gap: 0.75rem !important;
+        align-items: center !important;
         text-align: center !important;
     }
 
-    .header-actions {
+    .logo {
+        order: 1 !important;
         justify-content: center !important;
-        gap: 1rem !important;
-        order: -1 !important;
     }
 
-    /* Navigation Mobile Layout */
+    .logo h1 {
+        font-size: 1.1rem !important;
+        text-align: center !important;
+        margin: 0 !important;
+    }
+
+    .header-actions {
+        order: 0 !important;
+        justify-content: center !important;
+        gap: 1rem !important;
+        width: 100% !important;
+        margin-bottom: 0.5rem !important;
+    }
+
+    /* Navigation Mobile Layout - Grid Fix */
     .nav {
-        flex-direction: column !important;
+        order: 2 !important;
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
         gap: 0.5rem !important;
         width: 100% !important;
+        margin-top: 0.5rem !important;
     }
 
     .nav-btn {
         width: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
         justify-content: center !important;
-        padding: 1rem !important;
-        font-size: 1rem !important;
-        min-height: 50px !important;
+        padding: 0.75rem 0.5rem !important;
+        font-size: 0.85rem !important;
+        min-height: 60px !important;
+        text-align: center !important;
+        gap: 0.25rem !important;
+        border-radius: 8px !important;
+        line-height: 1.2 !important;
+    }
+
+    .nav-btn i {
+        font-size: 1.2rem !important;
+        margin-bottom: 0.25rem !important;
+        display: block !important;
+        width: 100% !important;
         text-align: center !important;
     }
 
-    /* Dropdown Mobile Fixes */
+    /* Ensure text is centered under icons */
+    .nav-btn {
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    /* Fix for Financial Management button text wrapping */
+    .dropdown-toggle {
+        white-space: normal !important;
+        word-wrap: break-word !important;
+        hyphens: auto !important;
+    }
+
+    /* Financial Management Dropdown Button */
     .nav-dropdown {
         width: 100% !important;
-        display: block !important;
+        grid-column: span 2 !important;
     }
 
     .dropdown-toggle {
         width: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
         justify-content: center !important;
         text-align: center !important;
+        gap: 0.25rem !important;
+    }
+
+    .dropdown-toggle i {
+        font-size: 1.2rem !important;
+        margin-bottom: 0.25rem !important;
+    }
+
+    .dropdown-arrow {
+        margin-top: 0.25rem !important;
+        font-size: 0.8rem !important;
+    }
+
+    /* User Info Mobile Positioning */
+    .user-info {
+        position: absolute !important;
+        bottom: 10px !important;
+        right: 10px !important;
+        background: rgba(0,0,0,0.7) !important;
+        color: white !important;
+        padding: 0.5rem !important;
+        border-radius: 8px !important;
+        font-size: 0.8rem !important;
+        z-index: 1000 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 0.5rem !important;
+    }
+
+    .user-info .logout-btn {
+        background: rgba(255,255,255,0.2) !important;
+        border: 1px solid rgba(255,255,255,0.3) !important;
+        color: white !important;
+        padding: 0.25rem 0.5rem !important;
+        border-radius: 4px !important;
+        font-size: 0.7rem !important;
+        min-height: auto !important;
+        min-width: auto !important;
     }
 
     /* Financial Menu Mobile Positioning */
@@ -2988,16 +3069,37 @@ button, .btn, .btn-small, .btn-success, .btn-primary, .btn-secondary, .btn-dange
 @media (max-width: 480px) {
     .header {
         padding: 0.5rem !important;
+        gap: 0.5rem !important;
     }
 
-    .header h1 {
-        font-size: 1rem !important;
+    .logo h1 {
+        font-size: 0.95rem !important;
+    }
+
+    .nav {
+        gap: 0.25rem !important;
     }
 
     .nav-btn {
-        padding: 0.75rem !important;
-        font-size: 0.9rem !important;
-        min-height: 48px !important;
+        padding: 0.5rem 0.25rem !important;
+        font-size: 0.75rem !important;
+        min-height: 55px !important;
+        line-height: 1.1 !important;
+    }
+
+    .nav-btn i {
+        font-size: 1rem !important;
+        margin-bottom: 0.2rem !important;
+    }
+
+    .dropdown-toggle {
+        padding: 0.5rem 0.25rem !important;
+        font-size: 0.75rem !important;
+        min-height: 55px !important;
+    }
+
+    .dropdown-toggle i {
+        font-size: 1rem !important;
     }
 
     .notification-dropdown,
@@ -3011,5 +3113,12 @@ button, .btn, .btn-small, .btn-success, .btn-primary, .btn-secondary, .btn-dange
 
     .main-content {
         padding: 0.5rem !important;
+    }
+
+    .user-info {
+        bottom: 5px !important;
+        right: 5px !important;
+        padding: 0.25rem !important;
+        font-size: 0.7rem !important;
     }
 }
