@@ -13,6 +13,22 @@ class TTClubManager {
         this.initializeApp();
     }
 
+    // Mobile Device Detection - Must be defined early for initialization
+    isMobileDevice() {
+        // Check user agent for mobile devices
+        const mobileUserAgents = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
+        const isMobileUserAgent = mobileUserAgents.test(navigator.userAgent);
+
+        // Check screen size and touch capability
+        const isMobileScreen = window.innerWidth <= 768 && 'ontouchstart' in window;
+
+        // Check for touch capability
+        const hasTouchScreen = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+        // Return true if any mobile indicator is present
+        return isMobileUserAgent || isMobileScreen || (window.innerWidth <= 768 && hasTouchScreen);
+    }
+
     // Data Management - Direct from db.js file
     loadDataFromDB() {
         console.log('Loading data from db.js file');
@@ -1413,8 +1429,10 @@ class TTClubManager {
 
     renderAllEvents() {
         const container = document.getElementById('all-events-list');
-        const typeFilter = document.getElementById('event-type-filter')?.value || '';
-        const priorityFilter = document.getElementById('event-priority-filter')?.value || '';
+        const typeFilterEl = document.getElementById('event-type-filter');
+        const priorityFilterEl = document.getElementById('event-priority-filter');
+        const typeFilter = typeFilterEl ? typeFilterEl.value : '';
+        const priorityFilter = priorityFilterEl ? priorityFilterEl.value : '';
 
         let filteredEvents = this.events.filter(event => event.isActive);
 
@@ -2302,9 +2320,9 @@ class TTClubManager {
 
         // Add member data
         this.members.forEach(member => {
-            const fee2023 = member.fees?.find(f => f.year === 2023)?.amount || 0;
-            const fee2024 = member.fees?.find(f => f.year === 2024)?.amount || 0;
-            const fee2025 = member.fees?.find(f => f.year === 2025)?.amount || 0;
+            const fee2023 = member.fees ? (member.fees.find(f => f.year === 2023) ? member.fees.find(f => f.year === 2023).amount : 0) : 0;
+            const fee2024 = member.fees ? (member.fees.find(f => f.year === 2024) ? member.fees.find(f => f.year === 2024).amount : 0) : 0;
+            const fee2025 = member.fees ? (member.fees.find(f => f.year === 2025) ? member.fees.find(f => f.year === 2025).amount : 0) : 0;
             const totalExpected = fee2023 + fee2024 + fee2025;
             const totalPending = totalExpected - member.totalPaid;
 
@@ -3977,7 +3995,7 @@ class TTClubManager {
             transaction.id,
             transaction.date,
             transaction.memberName,
-            this.members.find(m => m.id === transaction.memberId)?.villaNo || '',
+            (this.members.find(m => m.id === transaction.memberId) ? this.members.find(m => m.id === transaction.memberId).villaNo : '') || '',
             transaction.type.replace('_', ' ').toUpperCase(),
             transaction.amount
         ]);
@@ -4490,9 +4508,12 @@ class TTClubManager {
     }
 
     getFilteredExpenses() {
-        const searchTerm = document.getElementById('expense-search')?.value.toLowerCase() || '';
-        const categoryFilter = document.getElementById('expense-category-filter')?.value || '';
-        const statusFilter = document.getElementById('expense-status-filter')?.value || '';
+        const searchEl = document.getElementById('expense-search');
+        const categoryEl = document.getElementById('expense-category-filter');
+        const statusEl = document.getElementById('expense-status-filter');
+        const searchTerm = searchEl ? searchEl.value.toLowerCase() : '';
+        const categoryFilter = categoryEl ? categoryEl.value : '';
+        const statusFilter = statusEl ? statusEl.value : '';
 
         return this.expenses.filter(expense => {
             const matchesSearch = expense.description.toLowerCase().includes(searchTerm) ||
@@ -4677,8 +4698,10 @@ class TTClubManager {
     }
 
     getFilteredContributions() {
-        const searchTerm = document.getElementById('contribution-search')?.value.toLowerCase() || '';
-        const typeFilter = document.getElementById('contribution-type-filter')?.value || '';
+        const searchEl = document.getElementById('contribution-search');
+        const typeEl = document.getElementById('contribution-type-filter');
+        const searchTerm = searchEl ? searchEl.value.toLowerCase() : '';
+        const typeFilter = typeEl ? typeEl.value : '';
 
         return this.contributions.filter(contribution => {
             const location = contribution.villa || contribution.location || '';
