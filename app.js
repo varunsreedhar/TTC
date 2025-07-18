@@ -846,7 +846,7 @@ class TTClubManager {
     createLoginModal() {
         const modalHTML = `
             <div id="login-modal" class="modal" style="z-index: 10000;">
-                <div class="modal-content" style="max-width: 400px; margin: 10% auto;">
+                <div class="modal-content login-modal-content" style="max-width: 400px; margin: 10% auto;">
                     <h2 style="text-align: center; margin-bottom: 2rem; color: #2c3e50;">
                         <i class="fas fa-table-tennis" style="color: #e74c3c;"></i>
                         TT Club Login
@@ -863,22 +863,14 @@ class TTClubManager {
                                    placeholder="Enter your password" autocomplete="current-password">
                         </div>
                         <div class="form-actions">
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" id="login-submit-btn" class="btn btn-primary login-btn">
                                 <i class="fas fa-sign-in-alt"></i> Login
                             </button>
                         </div>
                     </form>
                     <div id="login-error" style="color: #e74c3c; text-align: center; margin-top: 1rem; display: none;"></div>
-                    <div style="text-align: center; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #eee; color: #7f8c8d; font-size: 0.9em;">
-                        <p><strong>Available Users:</strong></p>
-                        <p><strong>Super Admin (All Privileges + Reset Data):</strong><br>
-                        varun</p>
-                        <p><strong>Admin Users (Edit/Delete/Collect Fees + Reports):</strong><br>
-                        praveen | binu</p>
-                        <p><strong>Regular Users (View Only):</strong><br>
-                        joseph | benny | jaimon | zachariah | renith<br>
-                        ajith | jacob | matthews | jaison | anson | alex | john</p>
-                        <p><em>Use username as password for demo</em></p>
+                    <div style="text-align: center; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #eee; color: #7f8c8d; font-size: 0.85em;">
+                        <p><em>Use your username as password for demo access</em></p>
                     </div>
                 </div>
             </div>
@@ -886,33 +878,103 @@ class TTClubManager {
 
         document.body.insertAdjacentHTML('beforeend', modalHTML);
 
-        // Setup login form handler
-        document.getElementById('login-form').addEventListener('submit', (e) => {
+        // Setup login form handler with better mobile support
+        const loginForm = document.getElementById('login-form');
+        const loginButton = document.getElementById('login-submit-btn');
+
+        // Form submit handler
+        loginForm.addEventListener('submit', (e) => {
             e.preventDefault();
+            e.stopPropagation();
             this.handleLogin();
+        });
+
+        // Button click handler for mobile compatibility
+        loginButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.handleLogin();
+        });
+
+        // Touch event handlers for mobile
+        loginButton.addEventListener('touchstart', (e) => {
+            e.stopPropagation();
+            loginButton.style.transform = 'scale(0.95)';
+            loginButton.style.transition = 'transform 0.1s ease';
+        }, { passive: true });
+
+        loginButton.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setTimeout(() => {
+                loginButton.style.transform = '';
+                this.handleLogin();
+            }, 100);
+        }, { passive: false });
+
+        // Enter key handler for inputs
+        document.getElementById('login-username').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('login-password').focus();
+            }
+        });
+
+        document.getElementById('login-password').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                this.handleLogin();
+            }
         });
     }
 
     handleLogin() {
-        const username = document.getElementById('login-username').value.trim();
-        const password = document.getElementById('login-password').value.trim();
+        console.log('Handling login...');
+
+        const usernameInput = document.getElementById('login-username');
+        const passwordInput = document.getElementById('login-password');
+        const loginButton = document.getElementById('login-submit-btn');
+
+        if (!usernameInput || !passwordInput) {
+            console.error('Login inputs not found');
+            return;
+        }
+
+        const username = usernameInput.value.trim();
+        const password = passwordInput.value.trim();
+
+        // Disable button during processing
+        if (loginButton) {
+            loginButton.disabled = true;
+            loginButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
+        }
+
+        // Basic validation
+        if (!username || !password) {
+            this.showLoginError('Please enter both username and password');
+            this.resetLoginButton();
+            return;
+        }
 
         // Find user
         const user = this.users.find(u => u.username.toLowerCase() === username.toLowerCase());
 
         if (!user) {
             this.showLoginError('User not found');
+            this.resetLoginButton();
             return;
         }
 
         if (!user.isActive) {
             this.showLoginError('User account is disabled');
+            this.resetLoginButton();
             return;
         }
 
         // For demo purposes, use username as password
         if (password !== username) {
             this.showLoginError('Invalid password');
+            this.resetLoginButton();
             return;
         }
 
@@ -924,7 +986,10 @@ class TTClubManager {
         localStorage.setItem('ttclub_current_user', JSON.stringify(this.currentUser));
 
         // Hide login modal
-        document.getElementById('login-modal').style.display = 'none';
+        const loginModal = document.getElementById('login-modal');
+        if (loginModal) {
+            loginModal.style.display = 'none';
+        }
         document.body.style.overflow = '';
 
         // Update UI
@@ -932,6 +997,16 @@ class TTClubManager {
 
         this.showMessage(`Welcome back, ${user.name}!`, 'success');
         this.addActivity('User Login', `${user.name} logged in`);
+
+        console.log('Login successful for user:', user.username);
+    }
+
+    resetLoginButton() {
+        const loginButton = document.getElementById('login-submit-btn');
+        if (loginButton) {
+            loginButton.disabled = false;
+            loginButton.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login';
+        }
     }
 
     showLoginError(message) {
